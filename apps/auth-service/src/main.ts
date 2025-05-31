@@ -1,8 +1,7 @@
 import express from "express";
 import cors from "cors";
 
-const host = process.env.HOST ?? "localhost";
-const port = process.env.PORT ? Number(process.env.PORT) : 6001;
+
 
 const app = express();
 
@@ -18,9 +17,9 @@ app.get("/", (req, res) => {
   res.send({ message: "Hello API" });
 });
 
-const myPort = process.env.PORT || 6001;
-const server = app.listen(myPort, () => {
-  console.log(`Listening on port: ${myPort}`);
+const port = process.env.PORT || 6001;
+const server = app.listen(port, () => {
+  console.log(`Listening on port: ${port}`);
 });
 
 server.on("error", (err) => {

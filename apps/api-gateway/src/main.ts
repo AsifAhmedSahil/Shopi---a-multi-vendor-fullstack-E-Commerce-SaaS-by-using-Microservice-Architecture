@@ -40,6 +40,7 @@ const limiter = rateLimit({
 
 app.use(limiter);
 
+
 app.get("/gateway-health", (req, res) => {
   res.send({ message: "Welcome to api-gateway!" });
 });

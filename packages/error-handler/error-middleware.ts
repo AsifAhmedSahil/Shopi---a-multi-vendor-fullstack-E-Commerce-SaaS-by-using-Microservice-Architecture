@@ -1,5 +1,5 @@
 import { Request, Response } from "express"
-import { AppError } from "./index.ts"
+import { AppError } from "./index"
 
 
 export const errormiddleware = (err:Error,req:Request,res:Response ) =>{

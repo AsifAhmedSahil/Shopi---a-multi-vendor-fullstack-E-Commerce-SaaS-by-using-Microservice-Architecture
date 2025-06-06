@@ -3,9 +3,8 @@
   "version": "0.0.1",
   "private": true,
   "nx": {
-    "implicitDependencies": [
-      "@shopi/auth-service"
-    ],
+   "implicitDependencies": [],
+
     "targets": {
       "e2e": {
         "executor": "@nx/jest:jest",

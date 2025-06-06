@@ -1,77 +1,39 @@
 {
-  "name": "@shopi/auth-service",
-  "version": "0.0.1",
-  "private": true,
+  "name":"@./auth-service",
+  "version":"0.0.1",
+  "private":"true",
+  "scripts":{
+    "dev":"node src/main.ts"
+  },
   "nx": {
-    "targets": {
-      "build": {
-        "executor": "@nx/esbuild:esbuild",
-        "outputs": [
-          "{options.outputPath}"
-        ],
-        "defaultConfiguration": "production",
-        "options": {
-          "platform": "node",
-          "outputPath": "apps/auth-service/dist",
-          "format": [
-            "cjs"
-          ],
-          "bundle": false,
-          "main": "apps/auth-service/src/main.ts",
-          "tsConfig": "apps/auth-service/tsconfig.app.json",
-          "assets": [
-            "apps/auth-service/src/assets"
-          ],
-          "esbuildOptions": {
-            "sourcemap": true,
-            "outExtension": {
-              ".js": ".js"
-            }
-          }
-        },
-        "configurations": {
-          "development": {},
-          "production": {
-            "generateLockfile": true,
-            "esbuildOptions": {
-              "sourcemap": false,
-              "outExtension": {
-                ".js": ".js"
-              }
-            }
-          }
-        }
-      },
-      "serve": {
-        "continuous": true,
-        "executor": "@nx/js:node",
-        "defaultConfiguration": "development",
-        "dependsOn": [
+    "name":"auth-service",
+    "projectType":"application",
+    "sourceRoot": "apps/auth-service/src"
+,
+    "targets":{
+      "serve":{
+        "executor":"@nx/js:node",
+        "defaultConfiguration":"development",
+        "dependsOn":[
           "build"
         ],
-        "options": {
-          "buildTarget": "@shopi/auth-service:build",
-          "runBuildTargetDependencies": false
+        "options":{
+          "buildTarget":"auth-service:build",
+          "runBuildTargetDependencies":false
         },
-        "configurations": {
-          "development": {
-            "buildTarget": "@shopi/auth-service:build:development"
+        "configurations":{
+          "development":{
+            "buildTarget":"auth-service:build:development"
           },
-          "production": {
-            "buildTarget": "@shopi/auth-service:build:production"
+          "production":{
+            "buildTarget":"auth-service:build:production"
           }
         }
       },
-      "test": {
-        "options": {
-          "passWithNoTests": true
+      "test":{
+        "options":{
+          "passWithNoTests":true
         }
-      },
-      "docker-build": {
-        "dependsOn": [
-          "build"
-        ],
-        "command": "docker build -f apps/auth-service/Dockerfile . -t @shopi/auth-service"
       }
     }
   }

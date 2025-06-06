@@ -1,5 +1,5 @@
 {
-  "name": "@shopi/source",
+  "name": "@./source",
   "version": "0.0.0",
   "license": "MIT",
   "scripts": {
@@ -19,6 +19,7 @@
     "ioredis": "^5.6.1",
     "morgan": "^1.10.0",
     "nodemailer": "^7.0.3",
+    "swagger-autogen": "^2.23.7",
     "swagger-ui-express": "^5.0.1"
   },
   "devDependencies": {
@@ -53,7 +54,7 @@
     "prisma": "^6.8.2",
     "react-refresh": "^0.10.0",
     "ts-jest": "^29.1.0",
-    "ts-node": "10.9.1",
+    "ts-node": "^10.9.1",
     "tslib": "^2.3.0",
     "typescript": "~5.7.2",
     "webpack-cli": "^5.1.4"

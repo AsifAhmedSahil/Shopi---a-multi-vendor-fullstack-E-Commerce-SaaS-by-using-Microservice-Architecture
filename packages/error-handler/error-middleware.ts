@@ -15,7 +15,7 @@ export const errormiddleware = (err:Error,req:Request,res:Response ,next:NextFun
     }
 
     console.log("unhandleError",err)
-    console.log("unhandleError",err)
+    
     return res.status(500).json({
         error:"Something went wrong, Try again!"
     })

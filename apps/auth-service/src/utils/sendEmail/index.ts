@@ -20,6 +20,7 @@ const renderEmailTemplate = async (
 ): Promise<string> => {
   const templatePath = path.join(
     process.cwd(),
+    "apps",
     "auth-service",
     "src",
     "utils",
@@ -27,8 +28,12 @@ const renderEmailTemplate = async (
     `${templatename}.ejs`
   );
 
-  return ejs.renderFile(templatePath, data);
+  return ejs.renderFile(templatePath, {
+    ...data,
+    year: new Date().getFullYear(), // default year
+  });
 };
+
 
 // /send email to the nodemailer
 

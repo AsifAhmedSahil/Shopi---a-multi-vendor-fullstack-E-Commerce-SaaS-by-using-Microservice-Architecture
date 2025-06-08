@@ -1,6 +1,6 @@
 import crypto from "crypto";
 import { ValidationError } from "../../../../packages/error-handler";
-import { NextFunction } from "express";
+import { NextFunction, Request, Response } from "express";
 import redis from "../../../../packages/lib/redis";
 import { sendEmail } from "./sendEmail";
 
@@ -78,3 +78,27 @@ export const sendOTP = async (
   await redis.set(`otp:${email}`, otp, "EX", 300);
   await redis.set(`otp_cooldown:${email}`, "true", "EX", 60);
 };
+
+export const verifyOtp = async (email:string,otp:string,next:NextFunction) =>{
+  const storedOtp = await redis.get(`otp:${email}`)
+  if(!storedOtp){
+    return next(new ValidationError("Can not find otp in redis database!"))
+  }
+
+  const failedAttemptsKey = `otp_attempts:${email}`;
+  const failedAttempts = parseInt(await redis.get(failedAttemptsKey) || "0") 
+
+  // * if user otp not match and user try more than 2 times then otp locked for 30 minutes!
+  if(storedOtp !== otp){
+    if(failedAttempts >= 2){
+      await redis.set(`otp_lock:${email}`,"locked","EX",1800)
+      await redis.del(`otp:${email}`,failedAttemptsKey);
+      return next(new ValidationError("Too many otp request failed! Your acccount is locked for 30 minutes!"))
+    }
+    await redis.set(failedAttemptsKey,failedAttempts + 1,"EX",300)
+    return next(new ValidationError(`Incorrect OTP. ${2 - failedAttempts} attempt left!`))
+  }
+
+  await redis.del(`otp:${email}`,failedAttemptsKey)
+
+}

@@ -6,7 +6,7 @@ import React, { useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { IoEyeOff } from "react-icons/io5";
 import { IoEye } from "react-icons/io5";
-import axios from "axios";
+import axios, { AxiosError } from "axios";
 
 type FormData = {
   name: string;
@@ -17,7 +17,7 @@ type FormData = {
 const Login = () => {
   const [passwordVisible, setPasswordVisible] = useState(false);
   const [showOtp, setShowOtp] = useState(false);
-  const [serverError, setServerError] = useState<string | null>(null);
+
   const [canResend, setCanResend] = useState(true);
   const [timer, setTimer] = useState(60);
   const [otp, setOtp] = useState(["", "", "", ""]);
@@ -32,7 +32,6 @@ const Login = () => {
     formState: { errors },
   } = useForm<FormData>();
 
-  
   const startResendTimer = () => {
     const interval = setInterval(() => {
       setTimer((prev) => {
@@ -41,7 +40,7 @@ const Login = () => {
           setCanResend(true);
           return 0;
         }
-        
+
         return prev - 1;
       });
     }, 1000);
@@ -63,8 +62,25 @@ const Login = () => {
     },
   });
 
+  const verifyOtpMutation = useMutation({
+    mutationFn: async () => {
+      if (!userData) return;
+      const response = await axios.post(
+        `${process.env.NEXT_PUBLIC_SERVER_URI}/api/verify-user`,
+        {
+          ...userData,
+          otp: otp.join(""),
+        }
+      );
+      return response.data;
+    },
+    onSuccess: () => {
+      router.push("/login");
+    },
+  });
+
   const onSubmit = (data: FormData) => {
-    signUpMutation.mutate(data)
+    signUpMutation.mutate(data);
   };
 
   const handleChangeOtp = (index: number, value: string) => {
@@ -200,12 +216,13 @@ const Login = () => {
                 )}
               </div>
 
-              <button type="submit" disabled={signUpMutation.isPending} className="w-full bg-black text-white mt-4 py-2 rounded-lg text-lg">
+              <button
+                type="submit"
+                disabled={signUpMutation.isPending}
+                className="w-full bg-black text-white mt-4 py-2 rounded-lg text-lg"
+              >
                 {signUpMutation.isPending ? "Signing Up..." : "Sign Up"}
               </button>
-              {serverError && (
-                <p className="text-red-500 text-sm mt-4">{serverError}</p>
-              )}
             </form>
           ) : (
             <div>
@@ -229,8 +246,12 @@ const Login = () => {
                   />
                 ))}
               </div>
-              <button className="cursor-pointer text-lg w-full text-center bg-blue-500 text-white rounded-lg py-2 mt-4 font-semibold ">
-                Verify OTP
+              <button
+                className="cursor-pointer text-lg w-full text-center bg-blue-500 text-white rounded-lg py-2 mt-4 font-semibold "
+                disabled={verifyOtpMutation.isPending}
+                onClick={() => verifyOtpMutation.mutate()}
+              >
+                {verifyOtpMutation.isPending ? "Verifying" : "Verify OTP"}
               </button>
               <p className="text-center text-sm mt-4">
                 {canResend ? (
@@ -241,6 +262,14 @@ const Login = () => {
                   `Resend OTP in ${timer}s`
                 )}
               </p>
+
+              {verifyOtpMutation.isError &&
+                verifyOtpMutation.error instanceof AxiosError && (
+                  <p className="text-red-500 text-sm">
+                    {verifyOtpMutation.error.response?.data.message ||
+                      verifyOtpMutation.error.message}
+                  </p>
+                )}
             </div>
           )}
         </div>

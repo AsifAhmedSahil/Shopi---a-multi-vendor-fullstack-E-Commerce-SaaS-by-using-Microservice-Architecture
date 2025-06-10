@@ -1,21 +1,27 @@
 "use client";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { IoEyeOff } from "react-icons/io5";
 import { IoEye } from "react-icons/io5";
 
 type FormData = {
-    name:string,
+  name: string;
   email: string;
   password: string;
 };
 
 const Login = () => {
   const [passwordVisible, setPasswordVisible] = useState(false);
+  const [showOtp, setShowOtp] = useState(true);
   const [serverError, setServerError] = useState<string | null>(null);
-  const [rememberMe, setRememberMe] = useState(false);
+  const [canResend, setCanResend] = useState(true);
+  const [timer, setTimer] = useState(60);
+  const [otp, setOtp] = useState(["", "", "", ""]);
+  const [userData, setUserData] = useState<FormData | null>(null);
+  const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
+
   const router = useRouter();
 
   const {
@@ -25,6 +31,27 @@ const Login = () => {
   } = useForm<FormData>();
 
   const onSubmit = (data: FormData) => {};
+
+  const handleChangeOtp = (index: number, value: string) => {
+    if (!/^[0-9]?$/.test(value)) return;
+
+    const newOtp = [...otp];
+    newOtp[index] = value;
+    setOtp(newOtp);
+
+    if (value && index < inputRefs.current.length - 1) {
+      inputRefs.current[index + 1]?.focus();
+    }
+  };
+
+  const handleOtpKeyDown = (
+    index: number,
+    e: React.KeyboardEvent<HTMLInputElement>
+  ) => {
+    if (e.key === "Backspace" && !otp[index] && index > 0) {
+      inputRefs.current[index - 1]?.focus();
+    }
+  };
   return (
     <div className="w-full min-h-[85vh] py-10 bg-[#f1f1f1]">
       <h1 className="text-center text-4xl font-bold text-black font-Poppins">
@@ -73,78 +100,114 @@ const Login = () => {
             <div className="flex-1 border-t border-gray-300" />
           </div>
 
-          <form onSubmit={handleSubmit(onSubmit)}>
-            <label className="block text-gray-700 mb-1">Name</label>
-            <input
-              type="name"
-              placeholder="Enter Your Name"
-              className="w-full p-2 border border-gray-400 !rounded mb-1 outline-0"
-              {...register("name", {
-                required: "Name is required!",
-                
-              })}
-            />
-            {errors.name && (
-              <p className="text-red-500 text-sm">
-                {String(errors.name.message)}
-              </p>
-            )}
-            <label className="block text-gray-700 mb-1">Email</label>
-            <input
-              type="email"
-              placeholder="Enter Your Email"
-              className="w-full p-2 border border-gray-400 !rounded mb-1 outline-0"
-              {...register("email", {
-                required: "Email is required!",
-                pattern: {
-                  value: /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
-                  message: "Invalid Email Address",
-                },
-              })}
-            />
-            {errors.email && (
-              <p className="text-red-500 text-sm">
-                {String(errors.email.message)}
-              </p>
-            )}
-
-            <label className="block text-gray-700 mb-1">Password</label>
-            <div className="relative">
+          {!showOtp ? (
+            <form onSubmit={handleSubmit(onSubmit)}>
+              <label className="block text-gray-700 mb-1">Name</label>
               <input
-                type={passwordVisible ? "text" : "password"}
-                placeholder="Enter Your Password"
+                type="name"
+                placeholder="Enter Your Name"
                 className="w-full p-2 border border-gray-400 !rounded mb-1 outline-0"
-                {...register("password", {
-                  required: "Password is required!",
-                  minLength: {
-                    value: 6,
-                    message: "Password minimun 6 character long",
+                {...register("name", {
+                  required: "Name is required!",
+                })}
+              />
+              {errors.name && (
+                <p className="text-red-500 text-sm">
+                  {String(errors.name.message)}
+                </p>
+              )}
+              <label className="block text-gray-700 mb-1">Email</label>
+              <input
+                type="email"
+                placeholder="Enter Your Email"
+                className="w-full p-2 border border-gray-400 !rounded mb-1 outline-0"
+                {...register("email", {
+                  required: "Email is required!",
+                  pattern: {
+                    value: /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
+                    message: "Invalid Email Address",
                   },
                 })}
               />
-
-              <button
-                className="absolute inset-y-0 right-3 flex items-center text-gray-400 text-xl"
-                type="button"
-                onClick={() => setPasswordVisible(!passwordVisible)}
-              >
-                {passwordVisible ? <IoEye /> : <IoEyeOff />}
-              </button>
-
-              {errors.password && (
+              {errors.email && (
                 <p className="text-red-500 text-sm">
-                  {String(errors.password.message)}
+                  {String(errors.email.message)}
                 </p>
               )}
+
+              <label className="block text-gray-700 mb-1">Password</label>
+              <div className="relative">
+                <input
+                  type={passwordVisible ? "text" : "password"}
+                  placeholder="Enter Your Password"
+                  className="w-full p-2 border border-gray-400 !rounded mb-1 outline-0"
+                  {...register("password", {
+                    required: "Password is required!",
+                    minLength: {
+                      value: 6,
+                      message: "Password minimun 6 character long",
+                    },
+                  })}
+                />
+
+                <button
+                  className="absolute inset-y-0 right-3 flex items-center text-gray-400 text-xl"
+                  type="button"
+                  onClick={() => setPasswordVisible(!passwordVisible)}
+                >
+                  {passwordVisible ? <IoEye /> : <IoEyeOff />}
+                </button>
+
+                {errors.password && (
+                  <p className="text-red-500 text-sm">
+                    {String(errors.password.message)}
+                  </p>
+                )}
+              </div>
+
+              <button className="w-full bg-black text-white mt-4 py-2 rounded-lg text-lg">
+                Sign Up
+              </button>
+              {serverError && (
+                <p className="text-red-500 text-sm mt-4">{serverError}</p>
+              )}
+            </form>
+          ) : (
+            <div>
+              <h3 className="text-center font-semibold mb-4 text-xl">
+                Enter OTP
+              </h3>
+
+              <div className="flex justify-center gap-6">
+                {otp?.map((digit, index) => (
+                  <input
+                    type="text "
+                    key={index}
+                    ref={(el) => {
+                      if (el) inputRefs.current[index] = el;
+                    }}
+                    value={digit}
+                    maxLength={1}
+                    className="h-12 w-12 text-center border border-gray-300 outline-none !rounded"
+                    onChange={(e) => handleChangeOtp(index, e.target.value)}
+                    onKeyDown={(e) => handleOtpKeyDown(index, e)}
+                  />
+                ))}
+              </div>
+              <button className="cursor-pointer text-lg w-full text-center bg-blue-500 text-white rounded-lg py-2 mt-4 font-semibold ">
+                Verify OTP
+              </button>
+              <p className="text-center text-sm mt-4">
+                {canResend ? (
+                  <button className="text-blue-500 cursor-pointer">
+                    Resend OTP
+                  </button>
+                ) : (
+                  `Resend OTP in ${timer}s`
+                )}
+              </p>
             </div>
-           
-            <button className="w-full bg-black text-white mt-4 py-2 rounded-lg text-lg">
-              Sign Up
-            </button>
-            {serverError && (
-              <p className="text-red-500 text-sm mt-4">{serverError}</p>
-            )}
-          </form>
+          )}
         </div>
       </div>
     </div>

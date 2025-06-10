@@ -1,10 +1,12 @@
 "use client";
+import { useMutation } from "@tanstack/react-query";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import React, { useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { IoEyeOff } from "react-icons/io5";
 import { IoEye } from "react-icons/io5";
+import axios from "axios";
 
 type FormData = {
   name: string;
@@ -14,7 +16,7 @@ type FormData = {
 
 const Login = () => {
   const [passwordVisible, setPasswordVisible] = useState(false);
-  const [showOtp, setShowOtp] = useState(true);
+  const [showOtp, setShowOtp] = useState(false);
   const [serverError, setServerError] = useState<string | null>(null);
   const [canResend, setCanResend] = useState(true);
   const [timer, setTimer] = useState(60);
@@ -30,7 +32,40 @@ const Login = () => {
     formState: { errors },
   } = useForm<FormData>();
 
-  const onSubmit = (data: FormData) => {};
+  
+  const startResendTimer = () => {
+    const interval = setInterval(() => {
+      setTimer((prev) => {
+        if (prev <= 1) {
+          clearInterval(interval);
+          setCanResend(true);
+          return 0;
+        }
+        
+        return prev - 1;
+      });
+    }, 1000);
+  };
+  const signUpMutation = useMutation({
+    mutationFn: async (data: FormData) => {
+      const response = await axios.post(
+        `${process.env.NEXT_PUBLIC_SERVER_URI}/api/user-registration`,
+        data
+      );
+      return response.data;
+    },
+    onSuccess: (_, FormData) => {
+      setUserData(FormData);
+      setShowOtp(true);
+      setCanResend(false);
+      setTimer(60);
+      startResendTimer();
+    },
+  });
+
+  const onSubmit = (data: FormData) => {
+    signUpMutation.mutate(data)
+  };
 
   const handleChangeOtp = (index: number, value: string) => {
     if (!/^[0-9]?$/.test(value)) return;
@@ -165,8 +200,8 @@ const Login = () => {
                 )}
               </div>
 
-              <button className="w-full bg-black text-white mt-4 py-2 rounded-lg text-lg">
-                Sign Up
+              <button type="submit" disabled={signUpMutation.isPending} className="w-full bg-black text-white mt-4 py-2 rounded-lg text-lg">
+                {signUpMutation.isPending ? "Signing Up..." : "Sign Up"}
               </button>
               {serverError && (
                 <p className="text-red-500 text-sm mt-4">{serverError}</p>

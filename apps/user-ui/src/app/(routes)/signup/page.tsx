@@ -103,6 +103,12 @@ const Login = () => {
       inputRefs.current[index - 1]?.focus();
     }
   };
+
+  const resendOtp = () =>{
+    if(userData){
+      signUpMutation.mutate(userData)
+    }
+  }
   return (
     <div className="w-full min-h-[85vh] py-10 bg-[#f1f1f1]">
       <h1 className="text-center text-4xl font-bold text-black font-Poppins">
@@ -255,7 +261,7 @@ const Login = () => {
               </button>
               <p className="text-center text-sm mt-4">
                 {canResend ? (
-                  <button className="text-blue-500 cursor-pointer">
+                  <button onClick={resendOtp} className="text-blue-500 cursor-pointer">
                     Resend OTP
                   </button>
                 ) : (

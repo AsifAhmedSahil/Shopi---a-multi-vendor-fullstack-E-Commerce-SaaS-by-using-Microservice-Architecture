@@ -6,10 +6,13 @@ import { NavItems } from "../../configs/contants";
 import Link from "next/link";
 import { IoPerson } from "react-icons/io5";
 import { CiHeart, CiShoppingCart } from "react-icons/ci";
+import useUSer from "../../hooks/useHook";
 
 const HeaderBottom = () => {
   const [show, setShow] = useState(false);
   const [isSticky, setIsSticky] = useState(false);
+  const {user,isLoading} = useUSer()
+ 
 
   useEffect(() => {
     const handleScroll = () => {
@@ -71,18 +74,33 @@ const HeaderBottom = () => {
         </div>
         <div>
           {isSticky && (
-            <div className="flex items-center gap-8 pb-2">
+            <div className="flex items-center gap-8">
           <div className="flex items-center gap-2">
-            <Link
-              href={"/login"}
-              className="border-2 w-[50px] h-[50px] rounded-full flex items-center justify-center border-gray-500"
-            >
-              <IoPerson size={20} />
-            </Link>
-            <Link href={"/"}>
-              <span className="block font-medium">Hello,</span>
-              <span className="font-medium">Sign In</span>
-            </Link>
+            {!isLoading && user ? (
+              <>
+                <Link href={"/profile"} className="border-2 w-[50px] h-[50px] rounded-full flex items-center justify-center border-gray-500">
+                  <IoPerson size={20} />
+                </Link>
+
+                <Link href={"/profile"}>
+                  <span className="block font-medium">Hello,</span>
+                  <span className="font-medium">{user?.name?.split(" ")[0]}</span>
+                </Link>
+              </>
+            ) : (
+              <>
+                <Link
+                  href={"/login"}
+                  className="border-2 w-[50px] h-[50px] rounded-full flex items-center justify-center border-gray-500"
+                >
+                  <IoPerson size={20} />
+                </Link>
+                <Link href={"/"}>
+                  <span className="block font-medium">Hello,</span>
+                  <span className="font-medium">{isLoading ? "..." : "Sign In"}</span>
+                </Link>
+              </>
+            )}
           </div>
           <div className="flex items-center gap-5">
             <Link href={"/wishlist"} className="relative">
@@ -98,7 +116,6 @@ const HeaderBottom = () => {
               </div>
             </Link>
           </div>
-        
         </div>
           )}
         </div>

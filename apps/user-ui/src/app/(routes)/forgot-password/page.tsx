@@ -279,45 +279,54 @@ const ForgotPassword = () => {
         )}
 
         {step === "reset" && (
-  <div className="flex flex-col bg-white px-24 py-12">
-    <h3 className="text-center text-2xl font-semibold mb-6">Reset Password</h3>
+          <div className="flex flex-col bg-white px-24 py-12">
+            <h3 className="text-center text-2xl font-semibold mb-6">
+              Reset Password
+            </h3>
 
-    <form onSubmit={handleSubmit(onSubmitPassword)} className="space-y-4">
-      <div>
-        <label htmlFor="password" className="block text-gray-700 font-medium mb-1">
-          New Password
-        </label>
-        <input
-          id="password"
-          type="password"
-          placeholder="Enter your new password"
-          className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-black"
-          {...register("password", {
-            required: "Password is required!",
-            minLength: {
-              value: 6,
-              message: "Password must be at least 6 characters long",
-            },
-          })}
-        />
-        {errors.password && (
-          <p className="text-red-500 text-sm mt-1">
-            {String(errors.password.message)}
-          </p>
+            <form
+              onSubmit={handleSubmit(onSubmitPassword)}
+              className="space-y-4"
+            >
+              <div>
+                <label
+                  htmlFor="password"
+                  className="block text-gray-700 font-medium mb-1"
+                >
+                  New Password
+                </label>
+                <input
+                  id="password"
+                  type="password"
+                  placeholder="Enter your new password"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-black"
+                  {...register("password", {
+                    required: "Password is required!",
+                    minLength: {
+                      value: 6,
+                      message: "Password must be at least 6 characters long",
+                    },
+                  })}
+                />
+                {errors.password && (
+                  <p className="text-red-500 text-sm mt-1">
+                    {String(errors.password.message)}
+                  </p>
+                )}
+              </div>
+
+              <button
+                type="submit"
+                disabled={resetPasswordMutation.isPending}
+                className="w-full bg-black text-white py-2 rounded-md text-lg hover:bg-gray-900 transition disabled:opacity-50"
+              >
+                {resetPasswordMutation.isPending
+                  ? "Resetting..."
+                  : "Reset Password"}
+              </button>
+            </form>
+          </div>
         )}
-      </div>
-
-      <button
-        type="submit"
-        disabled={resetPasswordMutation.isPending}
-        className="w-full bg-black text-white py-2 rounded-md text-lg hover:bg-gray-900 transition disabled:opacity-50"
-      >
-        {resetPasswordMutation.isPending ? "Resetting..." : "Reset Password"}
-      </button>
-    </form>
-  </div>
-)}
-
       </div>
     </div>
   );

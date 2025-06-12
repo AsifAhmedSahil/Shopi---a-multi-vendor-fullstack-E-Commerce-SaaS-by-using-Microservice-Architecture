@@ -11,7 +11,7 @@ import {
 import prisma from "@packages/lib/prisma";
 import { AuthenticationError, ValidationError } from "@packages/error-handler";
 import bcrypt from "bcryptjs";
-import jwt from "jsonwebtoken";
+import jwt, { JsonWebTokenError } from "jsonwebtoken";
 import { setCookie } from "../utils/cookies/setCookies";
 
 // register with new user
@@ -125,6 +125,56 @@ export const loginUser = async (
   }
 };
 
+// refresh token user
+export const refreshToken = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const refreshToken = req.cookies.refresh_token;
+    if (!refreshToken) {
+      return new ValidationError("Unauthorized, no refresh token!");
+    }
+
+    const decoded = jwt.verify(
+      refreshToken,
+      process.env.REFRESH_TOKEN as string
+    ) as { id: string; role: string };
+
+    if (!decoded || !decoded.id || decoded.role) {
+      return new JsonWebTokenError("Forbidden!, invalid refresh token");
+    }
+
+    const user = await prisma.users.findUnique({ where: { id: decoded.id } });
+    if (!user) {
+      return new AuthenticationError("user / seller not found!");
+    }
+
+    const newAccessToken = jwt.sign(
+      { id: decoded.id, role: decoded.role },
+      process.env.ACCESS_TOKEN_SECRET as string,
+      { expiresIn: "15m" }
+    );
+
+    setCookie(res, "access_token", newAccessToken);
+    return res.status(201).json({ success: true });
+  } catch (error) {}
+};
+
+// get logged in user
+export const getUser = (req: any, res: Response, next: NextFunction) => {
+  try {
+    const user = req.user;
+    res.status(201).json({
+      success: true,
+      user,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 // user forgot password
 export const userForgotPassword = async (
   req: Request,
@@ -136,9 +186,13 @@ export const userForgotPassword = async (
 
 // *verify forgot password otp
 
-export const verifyUserForgotPassword = async (req:Request,res:Response,next:NextFunction) =>{
-  await handleVerifyUserForgotPassword(req,res,next)
-}
+export const verifyUserForgotPassword = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  await handleVerifyUserForgotPassword(req, res, next);
+};
 
 // * reset user password
 

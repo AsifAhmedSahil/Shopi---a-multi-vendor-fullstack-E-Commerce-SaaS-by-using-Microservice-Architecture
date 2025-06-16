@@ -13,6 +13,11 @@ import { AuthenticationError, ValidationError } from "@packages/error-handler";
 import bcrypt from "bcryptjs";
 import jwt, { JsonWebTokenError } from "jsonwebtoken";
 import { setCookie } from "../utils/cookies/setCookies";
+import Stripe from "stripe";
+
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
+  apiVersion: "2025-05-28.basil",
+});
 
 // register with new user
 
@@ -240,42 +245,55 @@ export const verifySeller = async (
       },
     });
 
-    res.status(201).json({seller,message:"Seller registered successfull!"})
+    res.status(201).json({ seller, message: "Seller registered successfull!" });
   } catch (error) {}
 };
 
 // create a new shop
-export const createShop = async(
-  req:Request,res:Response,next:NextFunction
-) =>{
-   try {
-    const {name,bio,address,opening_hours,website,category,sellerId} = req.body
+export const createShop = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { name, bio, address, opening_hours, website, category, sellerId } =
+      req.body;
 
-    if(!name || !bio || !address || !opening_hours || !website || !category || !sellerId){
-      return next(new ValidationError("All field are required! "))
+    if (
+      !name ||
+      !bio ||
+      !address ||
+      !opening_hours ||
+      !website ||
+      !category ||
+      !sellerId
+    ) {
+      return next(new ValidationError("All field are required! "));
     }
 
-    const shopData:any = {
-      name,bio,address,opening_hours,category,sellerId
+    const shopData: any = {
+      name,
+      bio,
+      address,
+      opening_hours,
+      category,
+      sellerId,
     };
 
-    if(website && website.trim !== ""){
-      shopData.website = website
+    if (website && website.trim !== "") {
+      shopData.website = website;
     }
 
     const shop = await prisma.shops.create({
-      data:shopData
-    })
+      data: shopData,
+    });
 
     res.status(201).json({
-      success:true,
-      shop 
-    })
-
-   } catch (error) {
-    
-   }
-}
+      success: true,
+      shop,
+    });
+  } catch (error) {}
+};
 
 // user forgot password
 export const userForgotPassword = async (
@@ -327,5 +345,52 @@ export const resetUserPassword = async (
     });
   } catch (error) {
     next(error);
+  }
+};
+
+// create stripe connect account
+
+export const createStripeConnectLink = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { sellerId } = req.body;
+    if (!sellerId) return next(new ValidationError("Seller ID is required!"));
+
+    const seller = await prisma.sellers.findUnique({ where: { id: sellerId } });
+
+    if (!seller) return next(new ValidationError("Seller not found!"));
+
+    const account = await stripe.accounts.create({
+      type: "express",
+      email: seller?.email,
+      country: "GB",
+      capabilities: {
+        card_payments: { requested: true },
+        transfers: { requested: true },
+      },
+    });
+
+    await prisma.sellers.update({
+      where: {
+        id: sellerId,
+      },
+      data: {
+        stripeId: account.id,
+      },
+    });
+
+    const accountLinks = await stripe.accountLinks.create({
+      account: account.id,
+      refresh_url: "http://localhost:3000/success",
+      return_url: "http://localhost:3000/success",
+      type: "account_onboarding",
+    });
+
+    res.json({ url: accountLinks.url });
+  } catch (error) {
+    return next(error)
   }
 };

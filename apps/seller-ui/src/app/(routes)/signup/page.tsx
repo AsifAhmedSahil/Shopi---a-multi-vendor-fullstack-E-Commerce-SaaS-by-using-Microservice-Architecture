@@ -14,7 +14,7 @@ import { BsStripe } from "react-icons/bs";
 const SignUp = () => {
   const [passwordVisible, setPasswordVisible] = useState(false);
   const [showOtp, setShowOtp] = useState(false);
-  const [activeStep, setActiveStep] = useState(1);
+  const [activeStep, setActiveStep] = useState(3);
 
   const [canResend, setCanResend] = useState(true);
   const [timer, setTimer] = useState(60);
@@ -347,8 +347,8 @@ const SignUp = () => {
           <div className="text-center">
             <h3 className="text-2xl font-semibold">Withdraw Method</h3>
             <br />
-            <button className="w-full m-auto flex items-center justify-center gap-3 text-lg bg-gray-800 text-white" onClick={connectStripe}>
-              Connect Stripe <BsStripe/>
+            <button className="w-full m-auto flex items-center justify-center gap-3 py-2 rounded-lg text-lg bg-gray-800 text-white" onClick={connectStripe}>
+              Connect Stripe <BsStripe  />
             </button>
 
           </div>

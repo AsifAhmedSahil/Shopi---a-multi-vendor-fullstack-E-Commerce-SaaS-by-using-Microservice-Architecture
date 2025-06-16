@@ -8,6 +8,8 @@ import { IoEyeOff } from "react-icons/io5";
 import { IoEye } from "react-icons/io5";
 import axios, { AxiosError } from "axios";
 import { countries } from "apps/seller-ui/src/utils/countries";
+import CreateShop from "apps/seller-ui/src/shared/modules/auth/create-shop";
+import { BsStripe } from "react-icons/bs";
 
 const SignUp = () => {
   const [passwordVisible, setPasswordVisible] = useState(false);
@@ -110,6 +112,19 @@ const SignUp = () => {
       signUpMutation.mutate(sellerData);
     }
   };
+
+  const connectStripe = async () =>{
+    try {
+      const response = await axios.post(`${process.env.NEXT_PUBLIC_SERVER_URI}/api/create-stripe-link`,{sellerId})
+
+      if(response.data.url){
+        window.location.href = response.data.url
+      }
+    } catch (error) {
+      console.log(error)
+    }
+
+  }
   return (
     <div className="w-full flex flex-col pt-10 min-h-screen items-center">
       {/* stepper */}
@@ -324,6 +339,20 @@ const SignUp = () => {
             )}
           </>
         )}
+        {
+          activeStep === 2 && <CreateShop sellerId={sellerId} setActiveStep={setActiveStep}/>
+        }
+        {
+          activeStep === 3 && 
+          <div className="text-center">
+            <h3 className="text-2xl font-semibold">Withdraw Method</h3>
+            <br />
+            <button className="w-full m-auto flex items-center justify-center gap-3 text-lg bg-gray-800 text-white" onClick={connectStripe}>
+              Connect Stripe <BsStripe/>
+            </button>
+
+          </div>
+        }
       </div>
     </div>
   );

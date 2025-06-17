@@ -366,7 +366,7 @@ export const createStripeConnectLink = async (
     const account = await stripe.accounts.create({
       type: "express",
       email: seller?.email,
-      country: "GB",
+      country: "BD",
       capabilities: {
         card_payments: { requested: true },
         transfers: { requested: true },
@@ -394,3 +394,59 @@ export const createStripeConnectLink = async (
     return next(error)
   }
 };
+
+// login seller
+export const loginSeller = async(req: Request,
+  res: Response,
+  next: NextFunction) =>{
+    try {
+      const {email,password} = req.body;
+      if(!email || !password) return next(new ValidationError("Email and password are required"))
+
+        const seller = await prisma.sellers.findUnique({where:{email}})
+
+        if(!seller) return next(new ValidationError("Invalid email and password!"))
+
+        // verify password
+        const isMatch = await bcrypt.compare(password,seller.password)
+        if(!isMatch) return next(new ValidationError("Invalid email or password"))
+
+          // generate access and refresh token
+          const accessToken = jwt.sign(
+            {id:seller.id, role:"seller"},
+            process.env.ACCESS_TOKEN_SECRET as string,
+            {expiresIn:"15m"}
+          )
+          const refreshToken = jwt.sign(
+            {id:seller.id, role:"seller"},
+            process.env.REFRESH_TOKEN_SECRET as string,
+            {expiresIn:"7d"}
+          )
+
+          // store refresh and access token
+          setCookie(res,"seller-refresh-token",refreshToken),
+          setCookie(res,"seller-access-token",accessToken)
+
+    } catch (error) {
+      next(error)
+    }
+
+}
+
+// get logged in seller
+
+export const getSeller = async(
+  req: any,
+  res: Response,
+  next: NextFunction
+) =>{
+  try {
+    const seller = req.seller;
+    res.status(201).json({
+      success:true,
+      seller 
+    })
+  } catch (error) {
+    next(error) 
+  }
+}

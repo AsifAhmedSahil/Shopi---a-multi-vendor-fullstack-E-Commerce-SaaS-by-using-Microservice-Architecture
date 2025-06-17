@@ -28,7 +28,7 @@ const Login = () => {
   const loginMutation = useMutation({
     mutationFn: async (data: FormData) => {
       const response = await axios.post(
-        `${process.env.NEXT_PUBLIC_SERVER_URI}/api/login-user`,
+        `${process.env.NEXT_PUBLIC_SERVER_URI}/api/login-seller`,
         data,
         { withCredentials: true }
       );
@@ -41,16 +41,20 @@ const Login = () => {
       router.push("/");
     },
 
-    onError: (error:AxiosError) =>{
-      const errorMessage = (error.response?.data as {message?:string})?.message || "Invalid Credentials!"
-      setServerError(errorMessage)
-    }
+    onError: (error: AxiosError) => {
+      const errorMessage =
+        (error.response?.data as { message?: string })?.message ||
+        "Invalid Credentials!";
+      setServerError(errorMessage);
+    },
   });
 
   const onSubmit = (data: FormData) => {
-    loginMutation.mutate(data)
+    loginMutation.mutate(data);
   };
 
+
+  
   return (
     <div className="w-full min-h-screen py-10 bg-[#f1f1f1]">
       <h1 className="text-center text-4xl font-bold text-black font-Poppins">
@@ -71,7 +75,6 @@ const Login = () => {
               Signup
             </Link>
           </p>
-       
 
           <div className="flex items-center py-5 text-gray-400 text-sm">
             <div className="flex-1 border-t border-gray-300" />
@@ -143,7 +146,10 @@ const Login = () => {
                 Forgot Password?
               </Link>
             </div>
-            <button disabled={loginMutation.isPending} className="w-full bg-black text-white py-2 rounded-lg text-lg">
+            <button
+              disabled={loginMutation.isPending}
+              className="w-full bg-black text-white py-2 rounded-lg text-lg"
+            >
               {loginMutation?.isPending ? "Loggin In..." : "Login"}
             </button>
             {serverError && (

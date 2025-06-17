@@ -1,7 +1,7 @@
 "use client";
 import { useMutation } from "@tanstack/react-query";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+
 import React, { useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { IoEyeOff } from "react-icons/io5";
@@ -14,7 +14,7 @@ import { BsStripe } from "react-icons/bs";
 const SignUp = () => {
   const [passwordVisible, setPasswordVisible] = useState(false);
   const [showOtp, setShowOtp] = useState(false);
-  const [activeStep, setActiveStep] = useState(3);
+  const [activeStep, setActiveStep] = useState(1);
 
   const [canResend, setCanResend] = useState(true);
   const [timer, setTimer] = useState(60);
@@ -23,7 +23,7 @@ const SignUp = () => {
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
   const [sellerId,setSellerId] = useState("")
 
-  const router = useRouter();
+
 
   console.log(process.env.NEXT_PUBLIC_SERVER_URI) 
 
@@ -114,6 +114,7 @@ const SignUp = () => {
   };
 
   const connectStripe = async () =>{
+    console.log("connect stripe hit")
     try {
       const response = await axios.post(`${process.env.NEXT_PUBLIC_SERVER_URI}/api/create-stripe-link`,{sellerId})
 

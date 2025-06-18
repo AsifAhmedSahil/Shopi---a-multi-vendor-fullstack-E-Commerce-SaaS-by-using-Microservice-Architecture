@@ -32,10 +32,8 @@ const Login = () => {
         data,
         { withCredentials: true }
       );
-
       return response.data;
     },
-
     onSuccess: (data) => {
       setServerError(null);
       router.push("/");
@@ -53,8 +51,6 @@ const Login = () => {
     loginMutation.mutate(data);
   };
 
-
-  
   return (
     <div className="w-full min-h-screen py-10 bg-[#f1f1f1]">
       <h1 className="text-center text-4xl font-bold text-black font-Poppins">

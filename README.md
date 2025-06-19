@@ -1,4 +1,4 @@
-# Shopi
+# Shopi -multi vendor E-commerce platform
 
 <a alt="Nx logo" href="https://nx.dev" target="_blank" rel="noreferrer"><img src="https://raw.githubusercontent.com/nrwl/nx/master/images/nx-logo.png" width="45"></a>
 
@@ -10,7 +10,7 @@
 
 [Click here to finish setting up your workspace!](https://cloud.nx.app/connect/NMAEmjVtcL)
 
-
+    
 ## Run tasks
 
 To run the dev server for your app, use:

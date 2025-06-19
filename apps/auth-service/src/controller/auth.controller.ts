@@ -427,6 +427,16 @@ export const loginSeller = async(req: Request,
           setCookie(res,"seller-refresh-token",refreshToken),
           setCookie(res,"seller-access-token",accessToken)
 
+          
+    return res.status(200).json({
+      message: "Login successful",
+      seller: {
+        id: seller.id,
+        email: seller.email,
+        // any other non-sensitive fields
+      }
+    });
+
     } catch (error) {
       next(error)
     }

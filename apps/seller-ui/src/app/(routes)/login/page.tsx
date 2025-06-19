@@ -25,6 +25,9 @@ const Login = () => {
     formState: { errors },
   } = useForm<FormData>();
 
+  console.log("Requesting login at:", `${process.env.NEXT_PUBLIC_SERVER_URI}/api/login-seller`);
+
+
   const loginMutation = useMutation({
     mutationFn: async (data: FormData) => {
       const response = await axios.post(

@@ -6,6 +6,7 @@ import { activeSidebarItem } from "../configs/constants";
 const useSidebar = () => {
   const [activeSidebar, setActiveSidebar] = useAtom(activeSidebarItem);
   return { activeSidebar, setActiveSidebar };
+  // update:
 };
 
 export default useSidebar;

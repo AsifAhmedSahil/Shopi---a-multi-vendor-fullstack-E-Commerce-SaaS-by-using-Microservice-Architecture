@@ -7,11 +7,14 @@ export const isAuthenticated = async (
   res: Response,
   next: NextFunction
 ) => {
+  console.log("middleware hit")
   try {
     const token =
       req.cookies["access-token"] ||
       req.cookies["seller-access-token"] ||
       req.headers.authorization?.split(" ")[1];
+
+    console.log(token)
 
     if (!token) {
       return res

@@ -102,10 +102,10 @@ const SidebarWrapper = () => {
               icon={
                 <BsPlus
                   size={26}
-                  color={getIconColor("/dashboard/create-products")}
+                  color={getIconColor("/dashboard/create-product")}
                 />
               }
-              isActive={activeSidebar === "/dashboard/create-products"}
+              isActive={activeSidebar === "/dashboard/create-product"}
             />
             <SidebarItems
               title="All Products"

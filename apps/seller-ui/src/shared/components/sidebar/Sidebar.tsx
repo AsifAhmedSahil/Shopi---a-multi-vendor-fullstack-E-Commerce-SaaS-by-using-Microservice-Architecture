@@ -98,7 +98,7 @@ const SidebarWrapper = () => {
           <SidebarMenu title="Products">
             <SidebarItems
               title="Create Products"
-              href="/dashboard/create-products"
+              href="/dashboard/create-product"
               icon={
                 <BsPlus
                   size={26}
@@ -143,6 +143,7 @@ const SidebarWrapper = () => {
               }
               isActive={activeSidebar === "/dashboard/all-events"}
             />
+            
 
           </SidebarMenu>
           <SidebarMenu title="Controllers">

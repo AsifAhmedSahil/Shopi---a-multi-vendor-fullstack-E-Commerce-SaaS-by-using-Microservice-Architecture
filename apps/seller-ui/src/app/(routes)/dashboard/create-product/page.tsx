@@ -36,7 +36,7 @@ const Page = () => {
   };
 
   const handleRemoveChange = () =>{
-    // update
+    
   }
 
   return (

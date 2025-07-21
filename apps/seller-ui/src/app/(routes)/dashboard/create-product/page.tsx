@@ -18,6 +18,7 @@ const Page = () => {
   const [isChanged, setIsChanged] = useState(false);
   const [images, setImages] = useState<(File | null)[]>([null]);
   const [loading, setLoading] = useState(false);
+  
 
   const onSubmit = (data: any) => {
     console.log(data);
@@ -35,7 +36,23 @@ const Page = () => {
     setValue("images", updatedImages);
   };
 
-  const handleRemoveChange = () =>{
+  const handleRemoveChange = (index:number) =>{
+    setImages((prevImages) =>{
+      let updatedImages = [...prevImages]
+      if(index === -1){
+        updatedImages[0] = null;
+      } else {
+        updatedImages.splice(index,1)
+      }
+
+      if(!updatedImages.includes(null) && updatedImages.length <8){
+        updatedImages.push(null)
+      }
+
+      return updatedImages;
+    })
+
+    setValue("image",images)
     
   }
 
@@ -58,7 +75,9 @@ const Page = () => {
       <div className="py-4 w-full flex gap-6">
         {/* left side - image upload section */}
         <div className="w-[35%] ">
-          <ImagePlaceholder
+          {
+            images.length > 0 && (
+              <ImagePlaceholder
             setOpenImageModal={setOpenImageModal}
             size="765*850"
             small={false}
@@ -66,6 +85,13 @@ const Page = () => {
             onImageChange={handleImageChange}
             onRemove={handleRemoveChange}
           />
+            )
+          }
+        
+
+        </div>
+        <div>
+          
         </div>
       </div>
     </form>

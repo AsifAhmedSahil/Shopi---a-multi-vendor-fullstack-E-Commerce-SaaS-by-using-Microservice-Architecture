@@ -73,7 +73,7 @@ const Page = () => {
       </div>
       {/* Content Layout */}
       <div className="py-4 w-full flex gap-6">
-        {/* left side - image upload section */}
+        
         <div className="w-[35%] ">
           {
             images.length > 0 && (

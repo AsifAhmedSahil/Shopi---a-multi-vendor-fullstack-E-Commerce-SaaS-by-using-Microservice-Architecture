@@ -18,7 +18,6 @@ const Page = () => {
   const [isChanged, setIsChanged] = useState(false);
   const [images, setImages] = useState<(File | null)[]>([null]);
   const [loading, setLoading] = useState(false);
-  
 
   const onSubmit = (data: any) => {
     console.log(data);
@@ -36,25 +35,24 @@ const Page = () => {
     setValue("images", updatedImages);
   };
 
-  const handleRemoveChange = (index:number) =>{
-    setImages((prevImages) =>{
-      let updatedImages = [...prevImages]
-      if(index === -1){
+  const handleRemoveChange = (index: number) => {
+    setImages((prevImages) => {
+      let updatedImages = [...prevImages];
+      if (index === -1) {
         updatedImages[0] = null;
       } else {
-        updatedImages.splice(index,1)
+        updatedImages.splice(index, 1);
       }
 
-      if(!updatedImages.includes(null) && updatedImages.length <8){
-        updatedImages.push(null)
+      if (!updatedImages.includes(null) && updatedImages.length < 8) {
+        updatedImages.push(null);
       }
 
       return updatedImages;
-    })
+    });
 
-    setValue("image",images)
-    
-  }
+    setValue("image", images);
+  };
 
   return (
     <form
@@ -73,25 +71,28 @@ const Page = () => {
       </div>
       {/* Content Layout */}
       <div className="py-4 w-full flex gap-6">
-        
         <div className="w-[35%] ">
-          {
-            images.length > 0 && (
-              <ImagePlaceholder
-            setOpenImageModal={setOpenImageModal}
-            size="765*850"
-            small={false}
-            index={0}
-            onImageChange={handleImageChange}
-            onRemove={handleRemoveChange}
-          />
-            )
-          }
-        
-
+          {images.length > 0 && (
+            <ImagePlaceholder
+              setOpenImageModal={setOpenImageModal}
+              size="765*850"
+              small={false}
+              index={0}
+              onImageChange={handleImageChange}
+              onRemove={handleRemoveChange}
+            />
+          )}
         </div>
-        <div>
-          
+        {/* right side - form inputs */}
+        
+        <div className="md:w-[65%]">
+          <div className="w-full flex gap-6">
+            <div className="w-2/4 ">
+
+            </div>
+
+          </div>
+
         </div>
       </div>
     </form>

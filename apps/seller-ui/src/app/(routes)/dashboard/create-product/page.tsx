@@ -3,6 +3,8 @@ import ImagePlaceholder from "apps/seller-ui/src/shared/components/image-placeho
 import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 import { BsChevronRight } from "react-icons/bs";
+import Input from "../../../../../../../packages/components/input";
+import ColorSelector from "packages/components/color-seletor";
 
 const Page = () => {
   const {
@@ -84,15 +86,122 @@ const Page = () => {
           )}
         </div>
         {/* right side - form inputs */}
-        
+
         <div className="md:w-[65%]">
           <div className="w-full flex gap-6">
             <div className="w-2/4 ">
+              <Input
+                label="Product Title"
+                placeholder="Enter Product Title"
+                {...register("title", { required: "Title is required" })}
+              />
+              {errors.title && (
+                <p className="text-red-500 text-xs mt-1">
+                  {errors.title.message as string}
+                </p>
+              )}
 
+              <div className="mt-2">
+                <Input
+                  type="textarea"
+                  rows={7}
+                  cols={10}
+                  label="Short Description about Product (Max 150 words)"
+                  placeholder="Enter Product Description "
+                  {...register("description", {
+                    required: "Description is requiered",
+                    validate: (value) => {
+                      const wordCount = value.trim().split(/\s+/).length;
+                      return (
+                        wordCount <= 150 ||
+                        `Description cannot exceed 150 words (Current:${wordCount})`
+                      );
+                    },
+                  })}
+                />
+                {errors.description && (
+                  <p className="text-red-500 text-xs mt-1">
+                    {errors.description.message as string}
+                  </p>
+                )}
+
+                <div className="mt-2">
+                  <Input
+                    label="Tags *"
+                    placeholder="apple,flagship"
+                    {...register("tags", {
+                      required: "Separate related products tags with a comma",
+                    })}
+                  />
+                  {errors.tags && (
+                    <p className="text-red-500 text-xs mt-1">
+                      {errors.tags.message as string}
+                    </p>
+                  )}
+
+                  <div className="mt-2">
+                    <Input
+                      label="Warranty *"
+                      placeholder="1 year / No Warranty"
+                      {...register("warranty", {
+                        required: "Warranty is required!",
+                      })}
+                    />
+                    {errors.warranty && (
+                      <p className="text-red-500 text-xs mt-1">
+                        {errors.warranty.message as string}
+                      </p>
+                    )}
+
+                    <div className="mt-2">
+                      <Input
+                        label="Slug *"
+                        placeholder="Product_slug"
+                        {...register("slug", {
+                          required: "slug is required!",
+                          pattern: {
+                            value: /^[a-z 0-9]+(?:-[a-z0-9]+)*$/,
+                            message:
+                              "Invalid slug format! use only lowercase letters, numbers , and special character ",
+                          },
+                          minLength: {
+                            value: 3,
+                            message: "Slug must be at least 3 characters long",
+                          },
+                          maxLength: {
+                            value: 50,
+                            message:
+                              "slug can not be longer than 50 characters.",
+                          },
+                        })}
+                      />
+                      {errors.slug && (
+                        <p className="text-red-500 text-xs mt-1">
+                          {errors.slug.message as string}
+                        </p>
+                      )}
+
+                      <div className="mt-2">
+                        <Input
+                          label="Brand"
+                          placeholder="Apple"
+                          {...register("brand")}
+                        />
+                        {errors.brand && (
+                          <p className="text-red-500 text-xs mt-1">
+                            {errors.brand.message as string}
+                          </p>
+                        )}
+                      </div>
+                      <div className="mt-2">
+                        <ColorSelector control={control} errors={errors} />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
-
           </div>
-
         </div>
       </div>
     </form>

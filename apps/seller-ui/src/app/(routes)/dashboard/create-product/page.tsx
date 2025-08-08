@@ -5,6 +5,7 @@ import { useForm } from "react-hook-form";
 import { BsChevronRight } from "react-icons/bs";
 import Input from "../../../../../../../packages/components/input";
 import ColorSelector from "packages/components/color-seletor";
+import CustomSpecifications from "packages/components/custom-specification";
 
 const Page = () => {
   const {
@@ -195,6 +196,12 @@ const Page = () => {
                       </div>
                       <div className="mt-2">
                         <ColorSelector control={control} errors={errors} />
+                      </div>
+
+                      {/* custom specification */}
+                      <div className="mt-2">
+                        <CustomSpecifications control={control} errors={errors}/>
+
                       </div>
                     </div>
                   </div>

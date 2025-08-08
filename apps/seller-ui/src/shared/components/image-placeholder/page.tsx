@@ -44,46 +44,57 @@ const ImagePlaceholder = ({
         id={`image-upload-${index}`}
         onChange={handleFileChange}
       />
-      {
-        imagePreview ? (
-          <>
-          <button type="button" onClick={()=>onRemove?.(index!)}
+      {imagePreview ? (
+        <>
+          <button
+            type="button"
+            onClick={() => onRemove?.(index!)}
             className="absolute top-3 right-3 p-2 !rounded bg-red-600 shadow-lg"
-            >
-              <IoClose size={16}/>
-
+          >
+            <IoClose size={16} />
           </button>
-          <button className="absolute top-3 right-[70px] p-2 !rounded bg-blue-600 shadow-lg" onClick={()=>setOpenImageModal(true)}>
-          <IoSparkles size={16}/>
-
+          <button
+            className="absolute top-3 right-[70px] p-2 !rounded bg-blue-600 shadow-lg"
+            onClick={() => setOpenImageModal(true)}
+          >
+            <IoSparkles size={16} />
           </button>
-          </>
-        ) :(
-          <label className="absolute top-3 right-3 p-2 !rounded bg-slate-700 shadow-lg" htmlFor={`image-upload-${index}`}>
-            <BsPencil size={16}/>
+        </>
+      ) : (
+        <label
+          className="absolute top-3 right-3 p-2 !rounded bg-slate-700 shadow-lg"
+          htmlFor={`image-upload-${index}`}
+        >
+          <BsPencil size={16} />
+        </label>
+      )}
 
-          </label>
-        )
-      }
-
-      {
-        imagePreview ? (
-          <Image 
+      {imagePreview ? (
+        <Image
           width={400}
           height={300}
           src={imagePreview}
           alt="uploaded"
           className="w-full h-full object-cover rounded-lg"
-          />
-        )  :(
-          <>
-          <p className={`text-gray-400 ${small ? "text-xl" : "text-4xl"} font-semibold`}>
+        />
+      ) : (
+        <>
+          <p
+            className={`text-gray-400 ${
+              small ? "text-xl" : "text-4xl"
+            } font-semibold`}
+          >
             {size}
-          </p >
-          <p className={`text-gray-500 ${small ? "text-sm" : "text-lg"} pt-2 text-center`}>please choose an image <br /> according to the expected ratio</p>
-          </>
-        )
-      }
+          </p>
+          <p
+            className={`text-gray-500 ${
+              small ? "text-sm" : "text-lg"
+            } pt-2 text-center`}
+          >
+            please choose an image <br /> according to the expected ratio
+          </p>
+        </>
+      )}
     </div>
   );
 };

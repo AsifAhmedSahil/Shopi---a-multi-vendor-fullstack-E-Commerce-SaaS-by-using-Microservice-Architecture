@@ -6,6 +6,7 @@ import { BsChevronRight } from "react-icons/bs";
 import Input from "../../../../../../../packages/components/input";
 import ColorSelector from "packages/components/color-seletor";
 import CustomSpecifications from "packages/components/custom-specification";
+import CustomProperties from "packages/components/custom-properties";
 
 const Page = () => {
   const {
@@ -201,6 +202,10 @@ const Page = () => {
                       {/* custom specification */}
                       <div className="mt-2">
                         <CustomSpecifications control={control} errors={errors}/>
+
+                      </div>
+                      <div className="mt-2">
+                        <CustomProperties control={control} errors={errors}/>
 
                       </div>
                     </div>

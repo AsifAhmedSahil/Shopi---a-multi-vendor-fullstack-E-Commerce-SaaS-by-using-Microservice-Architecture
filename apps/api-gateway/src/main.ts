@@ -11,6 +11,8 @@ import rateLimit from "express-rate-limit";
 import swaggerUi from "swagger-ui-express";
 import axios from "axios";
 import cookieParser from "cookie-parser";
+import { initializeSiteConfig } from "./libs/initializeSiteConfig";
+
 
 const app = express();
 
@@ -52,5 +54,12 @@ app.use("/",proxy("http://localhost:6001"))
 const port = process.env.PORT || 8080;
 const server = app.listen(port, () => {
   console.log(`Listening at http://localhost:${port}/api`);
+  try {
+    initializeSiteConfig()
+    console.log("Initializing the site config successfully")
+  } catch (error) {
+    console.error("Failed to initialized site config",error)
+    
+  }
 });
 server.on("error", console.error);

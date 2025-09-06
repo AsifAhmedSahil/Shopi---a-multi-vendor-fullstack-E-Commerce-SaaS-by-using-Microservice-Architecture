@@ -48,6 +48,7 @@ app.get("/gateway-health", (req, res) => {
 });
 
 app.use("/",proxy("http://localhost:6001"))
+app.use("/product",proxy("http://localhost:6002"))
 
 
 

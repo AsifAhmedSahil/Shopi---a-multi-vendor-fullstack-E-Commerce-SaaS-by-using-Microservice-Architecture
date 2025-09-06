@@ -1,12 +1,15 @@
 "use client";
 import ImagePlaceholder from "apps/seller-ui/src/shared/components/image-placeholder/page";
-import React, { useState } from "react";
-import { useForm } from "react-hook-form";
+import React, { useMemo, useState } from "react";
+import { Controller, useForm } from "react-hook-form";
 import { BsChevronRight } from "react-icons/bs";
 import Input from "../../../../../../../packages/components/input";
 import ColorSelector from "packages/components/color-seletor";
 import CustomSpecifications from "packages/components/custom-specification";
 import CustomProperties from "packages/components/custom-properties";
+import { useQuery } from "@tanstack/react-query";
+import axiosInstance from "apps/seller-ui/src/utils/axiosInstance";
+import RichTextEditor from "packages/components/rich-text-editor";
 
 const Page = () => {
   const {
@@ -22,6 +25,32 @@ const Page = () => {
   const [isChanged, setIsChanged] = useState(false);
   const [images, setImages] = useState<(File | null)[]>([null]);
   const [loading, setLoading] = useState(false);
+
+  const { data, isLoading, isError } = useQuery({
+    queryKey: ["categories"],
+    queryFn: async () => {
+      try {
+        const res = await axiosInstance.get("/product/api/get-categories");
+        return res.data;
+      } catch (error) {
+        console.log(error);
+      }
+    },
+    staleTime: 1000 * 60 * 5,
+    retry: 2,
+  });
+
+  const categories = data?.categories || [];
+  const subCategoriesData = data?.subCategories || {};
+
+  const selectedCategory = watch("category");
+  const regularPrice = watch("regular_price");
+
+  const subCategories = useMemo(() => {
+    return selectedCategory ? subCategoriesData[selectedCategory] || [] : [];
+  }, [selectedCategory, subCategoriesData]);
+
+  console.log(categories, subCategoriesData);
 
   const onSubmit = (data: any) => {
     console.log(data);
@@ -201,32 +230,31 @@ const Page = () => {
 
                       {/* custom specification */}
                       <div className="mt-2">
-                        <CustomSpecifications control={control} errors={errors}/>
-
+                        <CustomSpecifications
+                          control={control}
+                          errors={errors}
+                        />
                       </div>
                       <div className="mt-2">
-                        <CustomProperties control={control} errors={errors}/>
-
+                        <CustomProperties control={control} errors={errors} />
                       </div>
                       <div className="mt-2">
                         <label className="block mb-1 font-semibold text-gray-300">
                           Cash On Delivery*
                         </label>
-                        <select 
-                        {
-                          ...register("cash_on_delivery",{
-                            required: "Cash On Delivery is required"
-
-                          })
-
-                        }
-                        defaultValue="yes"
-                        className="w-full border outline-none border-gray-700 bg-transparent"
-
+                        <select
+                          {...register("cash_on_delivery", {
+                            required: "Cash On Delivery is required",
+                          })}
+                          defaultValue="yes"
+                          className="w-full border outline-none border-gray-700 bg-transparent"
                         >
-                          <option value="yes" className="bg-black">Yes</option>
-                          <option value="no" className="bg-black">No</option>
-
+                          <option value="yes" className="bg-black">
+                            Yes
+                          </option>
+                          <option value="no" className="bg-black">
+                            No
+                          </option>
                         </select>
 
                         {errors.cash_on_delivery && (
@@ -234,7 +262,6 @@ const Page = () => {
                             {errors.cash_on_delivery.message as string}
                           </p>
                         )}
-
                       </div>
                     </div>
                   </div>
@@ -242,9 +269,219 @@ const Page = () => {
               </div>
             </div>
             <div className="w-2/4">
-            <label className="block font-semibold mt-1 text-gray-300">
-              Category*
-            </label>
+              <label className="block font-semibold mt-1 text-gray-300">
+                Category*
+              </label>
+
+              {isLoading ? (
+                <p>Loading Categories</p>
+              ) : isError ? (
+                <p>Failed to get categories</p>
+              ) : (
+                <Controller
+                  name="category"
+                  control={control}
+                  rules={{ required: "Category is required" }}
+                  render={({ field }) => (
+                    <select
+                      {...field}
+                      className="w-full border outline-none border-gray-700 bg-transparent"
+                    >
+                      <option value="" className="bg-black">
+                        select category
+                      </option>
+                      {categories.map((category: string) => (
+                        <option
+                          value={category}
+                          key={category}
+                          className="bg-black"
+                        >
+                          {category}
+                        </option>
+                      ))}
+                    </select>
+                  )}
+                />
+              )}
+              {errors.category && (
+                <p className="text-red-500 text-xs mt-1">
+                  {errors.category.message as string}
+                </p>
+              )}
+
+              <div className="mt-2">
+                <label className="block font-semibold mt-1 text-gray-300">
+                  Sub category*
+                </label>
+
+                {isLoading ? (
+                  <p>Loading Subcategories</p>
+                ) : isError ? (
+                  <p>Failed to get Subcategories</p>
+                ) : (
+                  <Controller
+                    name="subcategory"
+                    control={control}
+                    rules={{ required: "Subcategory is required" }}
+                    render={({ field }) => (
+                      <select
+                        {...field}
+                        className="w-full border outline-none border-gray-700 bg-transparent"
+                      >
+                        <option value="" className="bg-black">
+                          select Subcategory
+                        </option>
+                        {subCategories.map((category: string) => (
+                          <option
+                            value={category}
+                            key={category}
+                            className="bg-black"
+                          >
+                            {category}
+                          </option>
+                        ))}
+                      </select>
+                    )}
+                  />
+                )}
+                {errors.subcategory && (
+                  <p className="text-red-500 text-xs mt-1">
+                    {errors.subcategory.message as string}
+                  </p>
+                )}
+              </div>
+
+              <div className="mt-2">
+                <label className="block font-semibold mt-1 text-gray-300">
+                  Detailed Description* (Min 100 words)
+                </label>
+
+                <Controller
+                  name="detailed_description"
+                  control={control}
+                  rules={{
+                    required: "Detailed description is required!",
+                    validate: (value) => {
+                      const wordCount = value
+                        ?.split(/\s+/)
+                        .filter((word: string) => word).lenght;
+                      return (
+                        wordCount >= 100 ||
+                        "Description must be at least 100 words!"
+                      );
+                    },
+                  }}
+                  render={({ field }) => (
+                    <RichTextEditor
+                      value={field.value}
+                      onChange={field.onChange}
+                      placeholder="Describe your topic in detail..."
+                    />
+                  )}
+                />
+
+                {errors.detailed_description && (
+                  <p className="text-red-500 text-xs mt-1">
+                    {errors.detailed_description.message as string}
+                  </p>
+                )}
+              </div>
+
+              <div className="mt-10">
+                
+                <Input
+                  label="Video URL"
+                  placeholder="https://youtube.com/xyz"
+                  {...register("video_url", {
+                    pattern: {
+                      value:
+                        /^http:\/\/(www\.)?youtube\.com\/embed\/[a-zA-Z0-9_-]+$/,
+                      message:
+                        "Invalid Youtube embed URL! Use format: https://www.youtube.com",
+                    },
+                  })}
+                />
+
+                {errors.video_url && (
+                  <p className="text-red-500 text-xs mt-1">
+                    {errors.video_url.message as string}
+                  </p>
+                )}
+              </div>
+
+              <div className="mt-2">
+                <Input
+                label="Regular Price"
+                placeholder="$20"
+                {
+                  ...register("regular_price",{
+                    valueAsNumber:true,
+                    min:{value:1,message:"Price must be at least 1"},
+                    validate:(value) =>!isNaN(value) || "Only numbers are allowed",
+                  })
+                }
+                />
+                {errors.regular_price && (
+                <p className="text-red-500 text-xs mt-1">
+                  {errors.regular_price.message as string}
+                </p>
+              )}
+
+              </div>
+              <div className="mt-2">
+                <Input
+                label="Sell Price"
+                placeholder="$20"
+                {
+                  ...register("sell_price",{
+                    valueAsNumber:true,
+                    min:{value:1,message:"Price must be at least 1"},
+                    validate:(value) =>{
+                      if(isNaN(value)) return "Only numbers are allowed";
+                      if(regularPrice && value>= regularPrice){
+                        return "Sale Price must be less than regular price";
+                      }
+                      return true;
+                    }
+                  })
+                }
+                />
+                {errors.sell_price && (
+                <p className="text-red-500 text-xs mt-1">
+                  {errors.sell_price.message as string}
+                </p>
+              )}
+
+              </div>
+              <div className="mt-2">
+                <Input
+                label="Stock *"
+                placeholder="$20"
+                {
+                  ...register("stock",{
+                    required:"Stock is required!",
+                    valueAsNumber:true,
+                    min:{value:1,message:"Price must be at least 1"},
+                    max:{
+                          value:1000,
+                          message:"Stock cannot exceed 1000"
+                    },
+                    validate:(value) =>{
+                      if(isNaN(value)) return "Only numbers are allowed";
+                      if(!Number.isInteger(value)) return "Stock must be a whole number!"
+                      return true;
+                    }
+                  })
+                }
+                />
+                {errors.stock && (
+                <p className="text-red-500 text-xs mt-1">
+                  {errors.stock.message as string}
+                </p>
+              )}
+
+              </div>
+
 
             </div>
           </div>

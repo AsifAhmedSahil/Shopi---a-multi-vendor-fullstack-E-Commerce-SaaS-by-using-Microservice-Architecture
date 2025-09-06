@@ -2,6 +2,7 @@ import express from "express";
 import cors from "cors";
 import { errormiddleware } from "@packages/error-handler/error-middleware";
 import cookieParser from "cookie-parser";
+import router from "./routes/product.routes";
 
 // import swaggerUi from "swagger-ui-express"
 // const swaggerDocument = require("./swagger-output.json")
@@ -28,8 +29,8 @@ app.get("/", (req, res) => {
 //   res.json(swaggerDocument);
 // })
 
-// // routes
-// app.use("/api",router);
+// routes
+app.use("/api",router);
 
 const port = process.env.PORT || 6002;
 

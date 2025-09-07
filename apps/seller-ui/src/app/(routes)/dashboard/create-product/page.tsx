@@ -9,8 +9,16 @@ import CustomSpecifications from "packages/components/custom-specification";
 import CustomProperties from "packages/components/custom-properties";
 import { useQuery } from "@tanstack/react-query";
 import axiosInstance from "apps/seller-ui/src/utils/axiosInstance";
-import RichTextEditor from "packages/components/rich-text-editor";
+// import RichTextEditor from "packages/components/rich-text-editor";
 import SizeSelector from "packages/components/size-selector";
+
+import dynamic from 'next/dynamic';
+
+const RichTextEditor = dynamic(
+  () => import('packages/components/rich-text-editor'),
+  { ssr: false }
+);
+
 
 const Page = () => {
   const {

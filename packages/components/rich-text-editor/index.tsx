@@ -1,8 +1,11 @@
+// packages/components/rich-text-editor/index.tsx
+'use client';
+
 import React from 'react';
 import ReactQuill from 'react-quill-new';
 import 'react-quill-new/dist/quill.snow.css';
 
-const RichTextEditor = ({ value, onChange }:any) => {
+const RichTextEditor = ({ value, onChange }: any) => {
   const modules = {
     toolbar: [
       [{ header: [1, 2, false] }],
@@ -16,9 +19,8 @@ const RichTextEditor = ({ value, onChange }:any) => {
   const formats = [
     'header',
     'bold', 'italic', 'underline', 'strike', 'blockquote',
-    'list', 'bullet',
-    'link', 'image',
-    'clean'
+    'list',
+    'link', 'image'
   ];
 
   return (
@@ -28,7 +30,7 @@ const RichTextEditor = ({ value, onChange }:any) => {
       modules={modules}
       formats={formats}
       theme="snow"
-       style={{ height: '250px' }}
+      style={{ height: '250px' }}
     />
   );
 };

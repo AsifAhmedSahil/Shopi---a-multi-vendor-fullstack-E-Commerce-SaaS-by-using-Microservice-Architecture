@@ -10,6 +10,7 @@ import CustomProperties from "packages/components/custom-properties";
 import { useQuery } from "@tanstack/react-query";
 import axiosInstance from "apps/seller-ui/src/utils/axiosInstance";
 import RichTextEditor from "packages/components/rich-text-editor";
+import SizeSelector from "packages/components/size-selector";
 
 const Page = () => {
   const {
@@ -22,7 +23,7 @@ const Page = () => {
   } = useForm();
 
   const [openImageMmodal, setOpenImageModal] = useState(false);
-  const [isChanged, setIsChanged] = useState(false);
+  const [isChanged, setIsChanged] = useState(true);
   const [images, setImages] = useState<(File | null)[]>([null]);
   const [loading, setLoading] = useState(false);
 
@@ -86,6 +87,10 @@ const Page = () => {
 
     setValue("image", images);
   };
+
+  const handleSaveDraft = () =>{
+
+  }
 
   return (
     <form
@@ -388,7 +393,6 @@ const Page = () => {
               </div>
 
               <div className="mt-10">
-                
                 <Input
                   label="Video URL"
                   placeholder="https://youtube.com/xyz"
@@ -411,79 +415,108 @@ const Page = () => {
 
               <div className="mt-2">
                 <Input
-                label="Regular Price"
-                placeholder="$20"
-                {
-                  ...register("regular_price",{
-                    valueAsNumber:true,
-                    min:{value:1,message:"Price must be at least 1"},
-                    validate:(value) =>!isNaN(value) || "Only numbers are allowed",
-                  })
-                }
+                  label="Regular Price"
+                  placeholder="$20"
+                  {...register("regular_price", {
+                    valueAsNumber: true,
+                    min: { value: 1, message: "Price must be at least 1" },
+                    validate: (value) =>
+                      !isNaN(value) || "Only numbers are allowed",
+                  })}
                 />
                 {errors.regular_price && (
-                <p className="text-red-500 text-xs mt-1">
-                  {errors.regular_price.message as string}
-                </p>
-              )}
-
+                  <p className="text-red-500 text-xs mt-1">
+                    {errors.regular_price.message as string}
+                  </p>
+                )}
               </div>
               <div className="mt-2">
                 <Input
-                label="Sell Price"
-                placeholder="$20"
-                {
-                  ...register("sell_price",{
-                    valueAsNumber:true,
-                    min:{value:1,message:"Price must be at least 1"},
-                    validate:(value) =>{
-                      if(isNaN(value)) return "Only numbers are allowed";
-                      if(regularPrice && value>= regularPrice){
+                  label="Sell Price"
+                  placeholder="$20"
+                  {...register("sell_price", {
+                    valueAsNumber: true,
+                    min: { value: 1, message: "Price must be at least 1" },
+                    validate: (value) => {
+                      if (isNaN(value)) return "Only numbers are allowed";
+                      if (regularPrice && value >= regularPrice) {
                         return "Sale Price must be less than regular price";
                       }
                       return true;
-                    }
-                  })
-                }
+                    },
+                  })}
                 />
                 {errors.sell_price && (
-                <p className="text-red-500 text-xs mt-1">
-                  {errors.sell_price.message as string}
-                </p>
-              )}
-
+                  <p className="text-red-500 text-xs mt-1">
+                    {errors.sell_price.message as string}
+                  </p>
+                )}
               </div>
               <div className="mt-2">
                 <Input
-                label="Stock *"
-                placeholder="$20"
-                {
-                  ...register("stock",{
-                    required:"Stock is required!",
-                    valueAsNumber:true,
-                    min:{value:1,message:"Price must be at least 1"},
-                    max:{
-                          value:1000,
-                          message:"Stock cannot exceed 1000"
+                  label="Stock *"
+                  placeholder="$20"
+                  {...register("stock", {
+                    required: "Stock is required!",
+                    valueAsNumber: true,
+                    min: { value: 1, message: "Price must be at least 1" },
+                    max: {
+                      value: 1000,
+                      message: "Stock cannot exceed 1000",
                     },
-                    validate:(value) =>{
-                      if(isNaN(value)) return "Only numbers are allowed";
-                      if(!Number.isInteger(value)) return "Stock must be a whole number!"
+                    validate: (value) => {
+                      if (isNaN(value)) return "Only numbers are allowed";
+                      if (!Number.isInteger(value))
+                        return "Stock must be a whole number!";
                       return true;
-                    }
-                  })
-                }
+                    },
+                  })}
                 />
                 {errors.stock && (
-                <p className="text-red-500 text-xs mt-1">
-                  {errors.stock.message as string}
-                </p>
-              )}
+                  <p className="text-red-500 text-xs mt-1">
+                    {errors.stock.message as string}
+                  </p>
+                )}
+              </div>
+
+              <div className="mt-2">
+                <SizeSelector control={control} errors={errors}/>
 
               </div>
 
+              <div className="mt-3">
+                <label className="block font-semibold mt-1 text-gray-300">
+                Select Discount Codes(optional)
+              </label>
 
+
+
+              </div>
             </div>
+          </div>
+
+          <div className="mt-6 flex justify-end gap-3">
+            {
+              isChanged && (
+                <button 
+                type="button"
+                onClick={handleSaveDraft}
+                className="px-4 py-2 bg-gray-700 text-white rounded-md"
+
+                >
+                  Save Draft
+                </button>
+              )
+            }
+
+            <button 
+            type="submit"
+            className="px-4 py-2 bg-blue-700 text-white rounded-md"
+            disabled={loading}
+            >
+              {loading ? "Creating..." : "Create"}
+            </button>
+
           </div>
         </div>
       </div>

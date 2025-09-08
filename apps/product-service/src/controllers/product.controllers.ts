@@ -1,4 +1,4 @@
-import { ValidationError } from "@packages/error-handler";
+import { NotFoundError, ValidationError } from "@packages/error-handler";
 import prisma from "@packages/lib/prisma";
 import { NextFunction, Request, Response } from "express";
 
@@ -44,20 +44,69 @@ export const createDiscountCodes = async (
       );
     }
     const discount_code = await prisma.discount_codes.create({
-        data:{
-            public_name,
-            discountCode,
-            discountType,
-            discountValue: parseFloat(discountValue),
-            sellerId: req.seller.id 
-        }
+      data: {
+        public_name,
+        discountCode,
+        discountType,
+        discountValue: parseFloat(discountValue),
+        sellerId: req.seller.id,
+      },
     });
 
     res.status(201).json({
-        success: true,
-        discount_code,
-    })
+      success: true,
+      discount_code,
+    });
   } catch (error) {
     console.log(error);
   }
 };
+
+export const getDiscountCode = async (
+  req: any,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const discount_codes = await prisma.discount_codes.findMany({
+      where: {
+        sellerId: req.seller.id,
+      },
+    });
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+export const deleteDiscountCode = async (
+  req: any,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { id } = req.params;
+    const sellerId = req.seller?.id;
+
+    const discountCodes = await prisma.discount_codes.findUnique({
+      where: { id },
+      select: { id: true, sellerId: true },
+    });
+
+    if (!discountCodes) {
+      return next(new NotFoundError("Discount code not found!"));
+    }
+    if (discountCodes.sellerId !== sellerId) {
+      return next(new ValidationError("Unauthorized Access!"));
+    }
+
+    await prisma.discount_codes.delete({ where: { id } });
+
+    return res
+      .status(201)
+      .json({ message: "Discount code successfully deleted!" });
+  } catch (error) {
+    next(error);
+  }
+};
+
+

@@ -102,7 +102,7 @@ export const deleteDiscountCode = async (
     await prisma.discount_codes.delete({ where: { id } });
 
     return res
-      .status(201)
+      .status(200)
       .json({ message: "Discount code successfully deleted!" });
   } catch (error) {
     next(error);

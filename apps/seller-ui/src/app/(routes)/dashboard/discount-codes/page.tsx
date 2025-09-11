@@ -1,13 +1,25 @@
 "use client";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import axiosInstance from "apps/seller-ui/src/utils/axiosInstance";
-import { Plus, Trash } from "lucide-react";
+import { Plus, Trash, X } from "lucide-react";
 import Link from "next/link";
 import React, { useState } from "react";
 import { BsChevronRight } from "react-icons/bs";
+import toast from "react-hot-toast";
+import { useForm } from "react-hook-form";
 
 const DiscountCodes = () => {
   const [showModal, setShowModal] = useState(false);
+  const queryClient = useQueryClient();
+
+  const {register,handleSubmit,reset,formState,control} = useForm({
+    defaultValues:{
+      public_name:"",
+      discounType: "percentage",
+      discountValue:"",
+      discountCode:""
+    }
+  })
 
   const { data: discountCodes = [], isLoading } = useQuery({
     queryKey: ["shop-discount"],
@@ -18,14 +30,37 @@ const DiscountCodes = () => {
     },
   });
 
-  const handleDeleteClick = async (discount:any) => {};
+  const createDiscountCodeMutation = useMutation({
+    mutationFn: async (data) => {
+      await axiosInstance.post("/product/api/create-discount-code", data);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey:['shop-discount']
+      });
+      reset()
+      setShowModal(false)
+    },
+  });
+
+  const handleDeleteClick = async (discount: any) => {};
+
+  const onSubmit = (data: any) => {
+    if (discountCodes.lenght >= 8) {
+      toast.error("You can only create upto 8 discount code");
+      return;
+    }
+  };
 
   return (
     <div className="w-full min-h-screen p-8">
       <div className="flex justify-between items-center mb-1">
         <h2 className="text-3xl text-white font-semibold">Discount Codes</h2>
 
-        <button className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center gap-2">
+        <button
+          className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center gap-2"
+          onClick={() => setShowModal(true)}
+        >
           <Plus size={18} /> Create Discount
         </button>
       </div>
@@ -88,30 +123,35 @@ const DiscountCodes = () => {
                   </td>
                 </tr>
               ))}
-
-             
             </tbody>
           </table>
-          
         )}
-         {
-              !isLoading &&  discountCodes?.length === 0 && (
-                  <p className="text-gray-500 w-full pt-4 text-center">
-                    No Discount Code Available
-                  </p>
-                )
-              }
+        {!isLoading && discountCodes?.length === 0 && (
+          <p className="text-gray-500 w-full pt-4 text-center">
+            No Discount Code Available
+          </p>
+        )}
       </div>
 
       {/* create discount modal */}
-      {
-        showModal && (
-          <div className="fixed top-0 left-0 w-full h-full bg-black bg-opacity-50 flex items-center justify-center">
-            
+      {showModal && (
+        <div className="fixed top-0 left-0 w-full h-full bg-black bg-opacity-50 flex items-center justify-center">
+          <div className="bg-gray-800 p-6 rounded-lg w-[450px] shadow-lg">
+            <div className="flex justify-between items-center border-b border-gray-700 pb-3">
+              <h3 className="text-xl text-white">Create Discount Code </h3>
 
+              <button
+                className="text-gray-400 hover:text-white"
+                onClick={() => setShowModal(false)}
+              >
+                <X size={22} />
+              </button>
+            </div>
           </div>
-        )
-      }
+
+          <form onSubmit={handleSubmit(onSubmit)} className="mt-4"></form>
+        </div>
+      )}
     </div>
   );
 };

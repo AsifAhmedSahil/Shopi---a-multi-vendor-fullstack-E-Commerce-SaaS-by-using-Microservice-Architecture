@@ -1,5 +1,6 @@
 import { NotFoundError, ValidationError } from "@packages/error-handler";
 import prisma from "@packages/lib/prisma";
+import { ObjectId } from "mongodb";
 import { NextFunction, Request, Response } from "express";
 
 export const getCategories = async (
@@ -62,21 +63,40 @@ export const createDiscountCodes = async (
   }
 };
 
-export const getDiscountCode = async (
-  req: any,
-  res: Response,
-  next: NextFunction
-) => {
+export const getDiscountCode = async (req: any, res: Response) => {
   try {
+    if (!req.seller || !req.seller.id) {
+      console.log("Seller not authenticated or req.seller missing");
+      return res.status(401).json({ message: "Seller not authenticated" });
+    }
+
+    const sellerIdString = typeof req.seller.id;
+    console.log(sellerIdString)
+
+
     const discount_codes = await prisma.discount_codes.findMany({
-      where: {
-        sellerId: req.seller.id,
-      },
+      
+      where: { sellerId: new ObjectId(req.seller.id) as unknown as string }
+,
+      // where: { sellerId: sellerIdString },
+    });
+
+    console.log("Discount codes found:", discount_codes.length);
+
+    return res.status(200).json({
+      message: "Discount codes fetched successfully",
+      discount_codes,
     });
   } catch (error) {
-    console.log(error);
+    console.error("Error fetching discount codes:", error);
+    return res.status(500).json({
+      message: "Internal server error",
+      // error: error.message,
+    });
   }
 };
+
+
 
 export const deleteDiscountCode = async (
   req: any,

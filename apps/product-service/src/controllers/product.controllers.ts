@@ -70,8 +70,7 @@ export const getDiscountCode = async (req: any, res: Response) => {
       return res.status(401).json({ message: "Seller not authenticated" });
     }
 
-    const sellerIdString = typeof req.seller.id;
-    console.log(sellerIdString)
+  
 
 
     const discount_codes = await prisma.discount_codes.findMany({
@@ -81,7 +80,7 @@ export const getDiscountCode = async (req: any, res: Response) => {
       // where: { sellerId: sellerIdString },
     });
 
-    console.log("Discount codes found:", discount_codes.length);
+    
 
     return res.status(200).json({
       message: "Discount codes fetched successfully",

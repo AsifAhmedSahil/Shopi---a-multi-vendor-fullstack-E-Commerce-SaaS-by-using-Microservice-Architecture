@@ -12,13 +12,12 @@ import axiosInstance from "apps/seller-ui/src/utils/axiosInstance";
 // import RichTextEditor from "packages/components/rich-text-editor";
 import SizeSelector from "packages/components/size-selector";
 
-import dynamic from 'next/dynamic';
+import dynamic from "next/dynamic";
 
 const RichTextEditor = dynamic(
-  () => import('packages/components/rich-text-editor'),
+  () => import("packages/components/rich-text-editor"),
   { ssr: false }
 );
-
 
 const Page = () => {
   const {
@@ -47,6 +46,15 @@ const Page = () => {
     },
     staleTime: 1000 * 60 * 5,
     retry: 2,
+  });
+
+  const { data: discountCodes = [], isLoading: discountLoading } = useQuery({
+    queryKey: ["shop-discount"],
+    queryFn: async () => {
+      const res = await axiosInstance.get("/product/api/get-discount-codes");
+
+      return res?.data?.discount_codes || [];
+    },
   });
 
   const categories = data?.categories || [];
@@ -96,9 +104,7 @@ const Page = () => {
     setValue("image", images);
   };
 
-  const handleSaveDraft = () =>{
-
-  }
+  const handleSaveDraft = () => {};
 
   return (
     <form
@@ -488,43 +494,68 @@ const Page = () => {
               </div>
 
               <div className="mt-2">
-                <SizeSelector control={control} errors={errors}/>
-
+                <SizeSelector control={control} errors={errors} />
               </div>
 
               <div className="mt-3">
                 <label className="block font-semibold mt-1 text-gray-300">
-                Select Discount Codes(optional)
-              </label>
+                  Select Discount Codes(optional)
+                </label>
 
+                {discountLoading ? (
+                  <p className="text-gray-400">Loading discount codes...</p>
+                ) : (
+                  <div className="flex flex-wrap gap-2">
+                    {discountCodes?.map((code: any) => (
+                      <button
+                        type="button"
+                        key={code.id}
+                        className={`px-3 py-1 rounded-md text-sm font-semibold border ${
+                          watch("discountCodes")?.includes(code.id)
+                            ? "bg-blue-600 text-white border-blue-600"
+                            : " bg-gray-600 text-gray-300 border-gray-600 "
+                        }  `}
+                        onClick={() => {
+                          const currentSelection = watch("discountCodes") || [];
+                          const updatedSelection = currentSelection?.includes(
+                            code.id
+                          )
+                            ? currentSelection.filter(
+                                (id: string) => id !== code.id
+                              )
+                            : [...currentSelection, code.id];
 
+                          setValue("discountCodes",updatedSelection)
+                        }}
+                      >
 
+                        {code?.public_name} ({code.discountValue} {code.discountType === "percentage" ? "%" : "$"})
+                      </button>
+                    ))}
+                  </div>
+                )}
               </div>
             </div>
           </div>
 
           <div className="mt-6 flex justify-end gap-3">
-            {
-              isChanged && (
-                <button 
+            {isChanged && (
+              <button
                 type="button"
                 onClick={handleSaveDraft}
                 className="px-4 py-2 bg-gray-700 text-white rounded-md"
+              >
+                Save Draft
+              </button>
+            )}
 
-                >
-                  Save Draft
-                </button>
-              )
-            }
-
-            <button 
-            type="submit"
-            className="px-4 py-2 bg-blue-700 text-white rounded-md"
-            disabled={loading}
+            <button
+              type="submit"
+              className="px-4 py-2 bg-blue-700 text-white rounded-md"
+              disabled={loading}
             >
               {loading ? "Creating..." : "Create"}
             </button>
-
           </div>
         </div>
       </div>

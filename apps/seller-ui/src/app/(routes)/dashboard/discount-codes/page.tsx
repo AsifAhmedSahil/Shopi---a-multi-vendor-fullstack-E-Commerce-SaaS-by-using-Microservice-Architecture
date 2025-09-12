@@ -13,8 +13,9 @@ import DeleteDiscountCodeModal from "apps/seller-ui/src/shared/modals/delete.dis
 
 const DiscountCodes = () => {
   const [showModal, setShowModal] = useState(false);
-  const [showDeleteDiscountCodeModal, setShowDeleteDiscountCodeModal] = useState(false);
-  const [deleteDiscountCode,setDeleteDiscountCode] = useState<any>();
+  const [showDeleteDiscountCodeModal, setShowDeleteDiscountCodeModal] =
+    useState(false);
+  const [deleteDiscountCode, setDeleteDiscountCode] = useState<any>();
 
   const queryClient = useQueryClient();
 
@@ -42,7 +43,7 @@ const DiscountCodes = () => {
     },
   });
 
-  console.log(discountCodes)
+
 
   const createDiscountCodeMutation = useMutation({
     mutationFn: async (data) => {
@@ -58,19 +59,20 @@ const DiscountCodes = () => {
   });
 
   const deleteDiscountCoddeMutation = useMutation({
-    mutationFn:async(discountId) =>{
-      await axiosInstance.delete(`/product/api/delete-discount-code/${discountId}`)
-
+    mutationFn: async (discountId) => {
+      await axiosInstance.delete(
+        `/product/api/delete-discount-code/${discountId}`
+      );
     },
-    onSuccess:() =>{
-      queryClient.invalidateQueries({queryKey:["shop-discount"]})
-      setShowDeleteDiscountCodeModal(false)
-    }
-  })
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["shop-discount"] });
+      setShowDeleteDiscountCodeModal(false);
+    },
+  });
 
   const handleDeleteClick = async (discount: any) => {
-    setDeleteDiscountCode(discount)
-    setShowDeleteDiscountCodeModal(true)
+    setDeleteDiscountCode(discount);
+    setShowDeleteDiscountCodeModal(true);
   };
 
   const onSubmit = (data: any) => {
@@ -79,7 +81,7 @@ const DiscountCodes = () => {
       return;
     }
 
-    createDiscountCodeMutation.mutate(data)
+    createDiscountCodeMutation.mutate(data);
   };
 
   return (
@@ -258,15 +260,15 @@ const DiscountCodes = () => {
         </div>
       )}
 
-      {
-        showDeleteDiscountCodeModal && deleteDiscountCode &&(
-          <DeleteDiscountCodeModal
+      {showDeleteDiscountCodeModal && deleteDiscountCode && (
+        <DeleteDiscountCodeModal
           discount={deleteDiscountCode}
-          onClose={()=> setShowDeleteDiscountCodeModal(false)}
-          onConfirm={()=> deleteDiscountCoddeMutation.mutate(deleteDiscountCode?.id)}
-          />
-        )
-      }
+          onClose={() => setShowDeleteDiscountCodeModal(false)}
+          onConfirm={() =>
+            deleteDiscountCoddeMutation.mutate(deleteDiscountCode?.id)
+          }
+        />
+      )}
     </div>
   );
 };

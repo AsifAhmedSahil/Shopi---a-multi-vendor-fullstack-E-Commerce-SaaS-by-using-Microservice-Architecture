@@ -2,6 +2,7 @@ import { NotFoundError, ValidationError } from "@packages/error-handler";
 import prisma from "@packages/lib/prisma";
 import { ObjectId } from "mongodb";
 import { NextFunction, Request, Response } from "express";
+import { imagekit } from "@packages/lib/imagekit";
 
 export const getCategories = async (
   req: Request,
@@ -70,17 +71,10 @@ export const getDiscountCode = async (req: any, res: Response) => {
       return res.status(401).json({ message: "Seller not authenticated" });
     }
 
-  
-
-
     const discount_codes = await prisma.discount_codes.findMany({
-      
-      where: { sellerId: new ObjectId(req.seller.id) as unknown as string }
-,
+      where: { sellerId: new ObjectId(req.seller.id) as unknown as string },
       // where: { sellerId: sellerIdString },
     });
-
-    
 
     return res.status(200).json({
       message: "Discount codes fetched successfully",
@@ -94,8 +88,6 @@ export const getDiscountCode = async (req: any, res: Response) => {
     });
   }
 };
-
-
 
 export const deleteDiscountCode = async (
   req: any,
@@ -128,4 +120,28 @@ export const deleteDiscountCode = async (
   }
 };
 
+// upload product image
+export const uploadProductImage = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { file } = req.body;
 
+    const response = await imagekit.upload({
+      file: file,
+      fileName: `product-${Date.now()}.jpg`,
+      folder: "/products",
+    });
+    console.log(response);
+    res.status(201).json({
+      file_url: response.url,
+      fileName: response.fileId,
+    });
+
+    
+  } catch (error) {
+    next(error);
+  }
+};

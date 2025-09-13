@@ -13,6 +13,7 @@ import axiosInstance from "apps/seller-ui/src/utils/axiosInstance";
 import SizeSelector from "packages/components/size-selector";
 
 import dynamic from "next/dynamic";
+import axios from "axios";
 
 const RichTextEditor = dynamic(
   () => import("packages/components/rich-text-editor"),
@@ -73,35 +74,62 @@ const Page = () => {
     console.log(data);
   };
 
-  const handleImageChange = (file: File | null, index: number) => {
-    const updatedImages = [...images];
-    updatedImages[index] = file;
-
-    if (index === images.length - 1 && images.length < 8) {
-      updatedImages.push(null);
-    }
-
-    setImages(updatedImages);
-    setValue("images", updatedImages);
+  const convertFileToBase64 = (file: File) => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = () => resolve(reader.result);
+      reader.onerror = (error) => reject(error);
+    });
   };
 
-  const handleRemoveChange = (index: number) => {
-    setImages((prevImages) => {
-      let updatedImages = [...prevImages];
-      if (index === -1) {
-        updatedImages[0] = null;
-      } else {
-        updatedImages.splice(index, 1);
+  const handleImageChange = async (file: File | null, index: number) => {
+    if (!file) return;
+
+    try {
+      const fileName = await convertFileToBase64(file);
+      // console.log(fileName)
+      const response = await axiosInstance.post(
+        "/product/api/upload-product-image",
+        {file:fileName}
+      );
+
+      const updatedImages = [...images];
+      updatedImages[index] = response.data.file_name;
+
+      if (index === images.length - 1 && updatedImages.length < 8) {
+        updatedImages.push(null);
       }
+
+      setImages(updatedImages);
+      setValue("image", updatedImages);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const handleRemoveChange = async (index: number) => {
+    try {
+      const updatedImages = [...images];
+      const imageToDelete = updatedImages[index];
+
+      if (imageToDelete && typeof imageToDelete === "string") {
+        // delete picture
+      }
+
+      updatedImages.splice(index, 1);
+
+      // add null placeholder
 
       if (!updatedImages.includes(null) && updatedImages.length < 8) {
         updatedImages.push(null);
       }
 
-      return updatedImages;
-    });
-
-    setValue("image", images);
+      setImages(updatedImages)
+      setValue("image",updatedImages);
+    } catch (error) {
+      console.log(error)
+    }
   };
 
   const handleSaveDraft = () => {};
@@ -525,11 +553,11 @@ const Page = () => {
                               )
                             : [...currentSelection, code.id];
 
-                          setValue("discountCodes",updatedSelection)
+                          setValue("discountCodes", updatedSelection);
                         }}
                       >
-
-                        {code?.public_name} ({code.discountValue} {code.discountType === "percentage" ? "%" : "$"})
+                        {code?.public_name} ({code.discountValue}{" "}
+                        {code.discountType === "percentage" ? "%" : "$"})
                       </button>
                     ))}
                   </div>

@@ -20,6 +20,12 @@ const RichTextEditor = dynamic(
   { ssr: false }
 );
 
+interface UploadedImages  {
+  fileId:string,
+  file_url:string
+
+}
+
 const Page = () => {
   const {
     register,
@@ -32,7 +38,7 @@ const Page = () => {
 
   const [openImageMmodal, setOpenImageModal] = useState(false);
   const [isChanged, setIsChanged] = useState(true);
-  const [images, setImages] = useState<(File | null)[]>([null]);
+  const [images, setImages] = useState<(UploadedImages | null)[]>([]);
   const [loading, setLoading] = useState(false);
 
   const { data, isLoading, isError } = useQuery({
@@ -93,9 +99,13 @@ const Page = () => {
         "/product/api/upload-product-image",
         {file:fileName}
       );
+      const uploadedImages:UploadedImages = {
+        fileId:response.data.fileId,
+        file_url: response.data.file_url
+      }
 
       const updatedImages = [...images];
-      updatedImages[index] = response.data.file_name;
+      updatedImages[index] = uploadedImages;
 
       if (index === images.length - 1 && updatedImages.length < 8) {
         updatedImages.push(null);
@@ -113,8 +123,15 @@ const Page = () => {
       const updatedImages = [...images];
       const imageToDelete = updatedImages[index];
 
-      if (imageToDelete && typeof imageToDelete === "string") {
+    
+
+      if (imageToDelete && typeof imageToDelete === "object") {
         // delete picture
+        await axiosInstance.delete("/product/api/delete-product-image",{
+          data:{
+            fileId: imageToDelete.fileId!
+          }
+        })
       }
 
       updatedImages.splice(index, 1);
@@ -152,16 +169,18 @@ const Page = () => {
       {/* Content Layout */}
       <div className="py-4 w-full flex gap-6">
         <div className="w-[35%] ">
-          {images.length > 0 && (
-            <ImagePlaceholder
-              setOpenImageModal={setOpenImageModal}
-              size="765*850"
-              small={false}
-              index={0}
-              onImageChange={handleImageChange}
-              onRemove={handleRemoveChange}
-            />
-          )}
+         {(images.length === 0 || images[0] === null || images[0]) && (
+  <ImagePlaceholder
+    setOpenImageModal={setOpenImageModal}
+    size="765*850"
+    small={false}
+    index={0}
+    onImageChange={handleImageChange}
+    onRemove={handleRemoveChange}
+    defaultImage={images[0]?.file_url || null}
+  />
+)}
+
         </div>
         {/* right side - form inputs */}
 

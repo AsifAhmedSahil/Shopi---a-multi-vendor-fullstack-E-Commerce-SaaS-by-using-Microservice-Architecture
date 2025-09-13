@@ -70,15 +70,19 @@ export const getDiscountCode = async (req: any, res: Response) => {
       console.log("Seller not authenticated or req.seller missing");
       return res.status(401).json({ message: "Seller not authenticated" });
     }
+    console.log( req.seller.id)
 
     const discount_codes = await prisma.discount_codes.findMany({
-      where: { sellerId: new ObjectId(req.seller.id) as unknown as string },
-      // where: { sellerId: sellerIdString },
+      // where: { sellerId: new ObjectId(req.seller.id) as unknown as string },
+      where: { sellerId: req.seller.id },
     });
+
+    console.log(discount_codes)
 
     return res.status(200).json({
       message: "Discount codes fetched successfully",
       discount_codes,
+      
     });
   } catch (error) {
     console.error("Error fetching discount codes:", error);
@@ -137,11 +141,30 @@ export const uploadProductImage = async (
     console.log(response);
     res.status(201).json({
       file_url: response.url,
-      fileName: response.fileId,
+      fileId: response.fileId,
     });
 
-    
+
   } catch (error) {
     next(error);
   }
 };
+
+// delete product image
+
+export const deleteProductImage = async(req:Request,res:Response,next:NextFunction) =>{
+  try {
+    const {fileId} = req.body
+    console.log(fileId)
+    const response = await imagekit.deleteFile(fileId)
+    console.log(response)
+
+    res.status(201).json({
+      success:true,
+      response
+    });
+  } catch (error) {
+    next(error)
+  }
+}
+

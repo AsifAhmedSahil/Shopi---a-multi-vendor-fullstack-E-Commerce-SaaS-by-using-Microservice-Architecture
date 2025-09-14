@@ -14,16 +14,16 @@ import SizeSelector from "packages/components/size-selector";
 
 import dynamic from "next/dynamic";
 import axios from "axios";
+import { X } from "lucide-react";
 
 const RichTextEditor = dynamic(
   () => import("packages/components/rich-text-editor"),
   { ssr: false }
 );
 
-interface UploadedImages  {
-  fileId:string,
-  file_url:string
-
+interface UploadedImages {
+  fileId: string;
+  file_url: string;
 }
 
 const Page = () => {
@@ -36,7 +36,7 @@ const Page = () => {
     formState: { errors },
   } = useForm();
 
-  const [openImageMmodal, setOpenImageModal] = useState(false);
+  const [openImageMmodal, setOpenImageModal] = useState(true);
   const [isChanged, setIsChanged] = useState(true);
   const [images, setImages] = useState<(UploadedImages | null)[]>([]);
   const [loading, setLoading] = useState(false);
@@ -97,12 +97,12 @@ const Page = () => {
       // console.log(fileName)
       const response = await axiosInstance.post(
         "/product/api/upload-product-image",
-        {file:fileName}
+        { file: fileName }
       );
-      const uploadedImages:UploadedImages = {
-        fileId:response.data.fileId,
-        file_url: response.data.file_url
-      }
+      const uploadedImages: UploadedImages = {
+        fileId: response.data.fileId,
+        file_url: response.data.file_url,
+      };
 
       const updatedImages = [...images];
       updatedImages[index] = uploadedImages;
@@ -123,15 +123,13 @@ const Page = () => {
       const updatedImages = [...images];
       const imageToDelete = updatedImages[index];
 
-    
-
       if (imageToDelete && typeof imageToDelete === "object") {
         // delete picture
-        await axiosInstance.delete("/product/api/delete-product-image",{
-          data:{
-            fileId: imageToDelete.fileId!
-          }
-        })
+        await axiosInstance.delete("/product/api/delete-product-image", {
+          data: {
+            fileId: imageToDelete.fileId!,
+          },
+        });
       }
 
       updatedImages.splice(index, 1);
@@ -142,10 +140,10 @@ const Page = () => {
         updatedImages.push(null);
       }
 
-      setImages(updatedImages)
-      setValue("image",updatedImages);
+      setImages(updatedImages);
+      setValue("image", updatedImages);
     } catch (error) {
-      console.log(error)
+      console.log(error);
     }
   };
 
@@ -169,18 +167,17 @@ const Page = () => {
       {/* Content Layout */}
       <div className="py-4 w-full flex gap-6">
         <div className="w-[35%] ">
-         {(images.length === 0 || images[0] === null || images[0]) && (
-  <ImagePlaceholder
-    setOpenImageModal={setOpenImageModal}
-    size="765*850"
-    small={false}
-    index={0}
-    onImageChange={handleImageChange}
-    onRemove={handleRemoveChange}
-    defaultImage={images[0]?.file_url || null}
-  />
-)}
-
+          {(images.length === 0 || images[0] === null || images[0]) && (
+            <ImagePlaceholder
+              setOpenImageModal={setOpenImageModal}
+              size="765*850"
+              small={false}
+              index={0}
+              onImageChange={handleImageChange}
+              onRemove={handleRemoveChange}
+              defaultImage={images[0]?.file_url || null}
+            />
+          )}
         </div>
         {/* right side - form inputs */}
 
@@ -584,6 +581,25 @@ const Page = () => {
               </div>
             </div>
           </div>
+
+          {openImageMmodal && (
+            <div className="fixed top-0 left-0 bg-black flex justify-center items-center w-full h-full bg-opacity-50 z-50">
+              <div className="w-[450px] bg-gray-800 text-white p-6">
+                <div className="flex justify-between items-center pb-3 mb-4">
+                  <h2 className="text-lg font-semibold">
+                    Enhance Product Image
+                  </h2>
+                  {/* update */}
+
+                  <X
+                    size={22}
+                    className="cursor-pointer"
+                    onClick={() => setOpenImageModal(!openImageMmodal)}
+                  />
+                </div>
+              </div>
+            </div>
+          )}
 
           <div className="mt-6 flex justify-end gap-3">
             {isChanged && (

@@ -589,7 +589,7 @@ const Page = () => {
                   <h2 className="text-lg font-semibold">
                     Enhance Product Image
                   </h2>
-                  {/* update */}
+                
 
                   <X
                     size={22}
@@ -600,7 +600,7 @@ const Page = () => {
               </div>
             </div>
           )}
-{/* update */}
+
           <div className="mt-6 flex justify-end gap-3">
             {isChanged && (
               <button

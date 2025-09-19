@@ -7,16 +7,22 @@ const ImagePlaceholder = ({
   size,
   small,
   onImageChange,
+  pictureUploadingLoader,
   onRemove,
   defaultImage = null,
   index = null,
+  setSelectedImage,
   setOpenImageModal,
+  images,
 }: {
   size: string;
   small?: boolean;
   onImageChange: (file: File | null, index: number) => void;
   onRemove?: (index: number) => void;
+  pictureUploadingLoader: boolean;
   defaultImage?: string | null;
+  setSelectedImage: (e: string) => void;
+  images: any;
   setOpenImageModal: (openImageModal: boolean) => void;
   index?: any;
 }) => {
@@ -48,14 +54,19 @@ const ImagePlaceholder = ({
         <>
           <button
             type="button"
+              disabled={pictureUploadingLoader}
             onClick={() => onRemove?.(index!)}
             className="absolute top-3 right-3 p-2 !rounded bg-red-600 shadow-lg"
           >
             <IoClose size={16} />
           </button>
           <button
+            disabled={pictureUploadingLoader}
             className="absolute top-3 right-[70px] p-2 !rounded bg-blue-600 shadow-lg"
-            onClick={() => setOpenImageModal(true)}
+            onClick={() => {
+              setOpenImageModal(true);
+              setSelectedImage(images[index].file_url);
+            }}
           >
             <IoSparkles size={16} />
           </button>

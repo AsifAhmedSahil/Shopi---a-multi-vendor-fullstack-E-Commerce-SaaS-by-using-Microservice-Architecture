@@ -174,7 +174,8 @@ export const refreshToken = async (
     const newAccessToken = jwt.sign(
       { id: decoded.id, role: decoded.role },
       process.env.ACCESS_TOKEN_SECRET as string,
-      { expiresIn: "15m" }
+      // { expiresIn: "15m" }
+      { expiresIn: "7d" }
     );
 
     if (decoded.role === "user") {
@@ -444,7 +445,8 @@ export const loginSeller = async (
     const accessToken = jwt.sign(
       { id: seller.id, role: "seller" },
       process.env.ACCESS_TOKEN_SECRET as string,
-      { expiresIn: "15m" }
+      // { expiresIn: "15m" }
+      { expiresIn: "7d" }
     );
     const refreshToken = jwt.sign(
       { id: seller.id, role: "seller" },

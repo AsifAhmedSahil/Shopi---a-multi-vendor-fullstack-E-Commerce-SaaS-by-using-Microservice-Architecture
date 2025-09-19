@@ -1,6 +1,6 @@
 "use client";
 import ImagePlaceholder from "apps/seller-ui/src/shared/components/image-placeholder/page";
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { BsChevronRight } from "react-icons/bs";
 import Input from "../../../../../../../packages/components/input";
@@ -15,6 +15,7 @@ import SizeSelector from "packages/components/size-selector";
 import dynamic from "next/dynamic";
 import axios from "axios";
 import { X } from "lucide-react";
+import Image from "next/image";
 
 const RichTextEditor = dynamic(
   () => import("packages/components/rich-text-editor"),
@@ -36,10 +37,12 @@ const Page = () => {
     formState: { errors },
   } = useForm();
 
-  const [openImageMmodal, setOpenImageModal] = useState(true);
+  const [openImageMmodal, setOpenImageModal] = useState(false);
   const [isChanged, setIsChanged] = useState(true);
   const [images, setImages] = useState<(UploadedImages | null)[]>([]);
   const [loading, setLoading] = useState(false);
+  const [selectedImage, setSelectedImage] = useState("");
+  const [pictureUploadingLoader, setPictureUploadingLoader] = useState(false);
 
   const { data, isLoading, isError } = useQuery({
     queryKey: ["categories"],
@@ -92,9 +95,11 @@ const Page = () => {
   const handleImageChange = async (file: File | null, index: number) => {
     if (!file) return;
 
+    setPictureUploadingLoader(true);
+
     try {
       const fileName = await convertFileToBase64(file);
-      // console.log(fileName)
+
       const response = await axiosInstance.post(
         "/product/api/upload-product-image",
         { file: fileName }
@@ -115,10 +120,17 @@ const Page = () => {
       setValue("image", updatedImages);
     } catch (error) {
       console.log(error);
+    } finally {
+      setPictureUploadingLoader(false);
     }
   };
 
+  useEffect(() => {
+    console.log("State changed:", pictureUploadingLoader);
+  }, [pictureUploadingLoader]);
+
   const handleRemoveChange = async (index: number) => {
+    console.log(index);
     try {
       const updatedImages = [...images];
       const imageToDelete = updatedImages[index];
@@ -173,9 +185,12 @@ const Page = () => {
               size="765*850"
               small={false}
               index={0}
+              images={images}
+              pictureUploadingLoader={pictureUploadingLoader}
               onImageChange={handleImageChange}
+              setSelectedImage={setSelectedImage}
               onRemove={handleRemoveChange}
-              defaultImage={images[0]?.file_url || null}
+              // defaultImage={images[0]?.file_url || null}
             />
           )}
         </div>
@@ -589,12 +604,19 @@ const Page = () => {
                   <h2 className="text-lg font-semibold">
                     Enhance Product Image
                   </h2>
-                
 
                   <X
                     size={22}
                     className="cursor-pointer"
                     onClick={() => setOpenImageModal(!openImageMmodal)}
+                  />
+                </div>
+
+                <div className="relative w-full h-[250px] rounded-md overflow-hidden border border-gray-600">
+                  <Image
+                    src={selectedImage}
+                    alt="product-image"
+                    layout="fill"
                   />
                 </div>
               </div>

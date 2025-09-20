@@ -1,4 +1,4 @@
-import { NotFoundError, ValidationError } from "@packages/error-handler";
+import { AuthenticationError, NotFoundError, ValidationError } from "@packages/error-handler";
 import prisma from "@packages/lib/prisma";
 import { ObjectId } from "mongodb";
 import { NextFunction, Request, Response } from "express";
@@ -70,19 +70,18 @@ export const getDiscountCode = async (req: any, res: Response) => {
       console.log("Seller not authenticated or req.seller missing");
       return res.status(401).json({ message: "Seller not authenticated" });
     }
-    console.log( req.seller.id)
+    console.log(req.seller.id);
 
     const discount_codes = await prisma.discount_codes.findMany({
       // where: { sellerId: new ObjectId(req.seller.id) as unknown as string },
       where: { sellerId: req.seller.id },
     });
 
-    console.log(discount_codes)
+    console.log(discount_codes);
 
     return res.status(200).json({
       message: "Discount codes fetched successfully",
       discount_codes,
-      
     });
   } catch (error) {
     console.error("Error fetching discount codes:", error);
@@ -143,8 +142,6 @@ export const uploadProductImage = async (
       file_url: response.url,
       fileId: response.fileId,
     });
-
-
   } catch (error) {
     next(error);
   }
@@ -152,19 +149,76 @@ export const uploadProductImage = async (
 
 // delete product image
 
-export const deleteProductImage = async(req:Request,res:Response,next:NextFunction) =>{
+export const deleteProductImage = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   try {
-    const {fileId} = req.body
-    console.log(fileId)
-    const response = await imagekit.deleteFile(fileId)
-    console.log(response)
+    const { fileId } = req.body;
+    console.log(fileId);
+    const response = await imagekit.deleteFile(fileId);
+    console.log(response);
 
     res.status(201).json({
-      success:true,
-      response
+      success: true,
+      response,
     });
   } catch (error) {
-    next(error)
+    next(error);
   }
-}
+};
 
+// create product
+
+export const createProduct = async (
+  req: any,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const {
+      title,
+      description,
+      detailed_description,
+      warranty,
+      custom_specifications,
+      slug,
+      tags,
+      cash_on_delivery,
+      brand,
+      video_url,
+      category,
+      colors = [],
+      sizes = [],
+      discountCodes,
+      stock,
+      sale_price,
+      regular_price,
+      subCategory,
+      customProperties = {},
+      images = [],
+    } = req.body;
+
+    if (
+      !title ||
+      !slug ||
+      !description ||
+      !category ||
+      !subCategory ||
+      !sale_price ||
+      !images ||
+      !tags ||
+      !stock ||
+      !regular_price
+    ) {
+      return next(new ValidationError("Missing required fields!"));
+    }
+
+    if(!req.seller.id){
+      return next(new AuthenticationError("only seller can create products!"))
+    }
+
+    
+  } catch (error) {}
+};

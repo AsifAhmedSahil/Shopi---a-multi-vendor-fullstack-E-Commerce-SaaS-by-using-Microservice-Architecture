@@ -17,6 +17,8 @@ import axios from "axios";
 import { Key, Wand, X } from "lucide-react";
 import Image from "next/image";
 import { enhancements } from "apps/seller-ui/src/utils/AI.enhancement";
+import { useRouter } from "next/navigation";
+import toast from "react-hot-toast";
 
 const RichTextEditor = dynamic(
   () => import("packages/components/rich-text-editor"),
@@ -46,6 +48,8 @@ const Page = () => {
   const [selectedImage, setSelectedImage] = useState("");
   const [pictureUploadingLoader, setPictureUploadingLoader] = useState(false);
   const [processing,setProcessing] = useState(false)
+
+  const router =useRouter()
 
   const { data, isLoading, isError } = useQuery({
     queryKey: ["categories"],
@@ -82,8 +86,31 @@ const Page = () => {
 
   console.log(categories, subCategoriesData);
 
-  const onSubmit = (data: any) => {
-    console.log(data);
+  const onSubmit =async (data: any) => {
+
+      const formattedData = {
+    ...data,
+    tags: data.tags
+      .split(",")
+      .map((tag:any) => tag.trim())
+      .filter((tag:any) => tag !== ""),
+       images: data.image,
+  };
+    console.log(formattedData)
+   
+    try {
+      setLoading(true)
+      await axiosInstance.post("/product/api/create-product",formattedData)
+      // router.push("/dashboard/all-products")
+
+    } catch (error:any) {
+      toast.error(error?.data?.message)
+      
+    } finally{
+      setLoading(false)
+    }
+
+
   };
 
   const convertFileToBase64 = (file: File) => {
@@ -244,7 +271,7 @@ const Page = () => {
                   cols={10}
                   label="Short Description about Product (Max 150 words)"
                   placeholder="Enter Product Description "
-                  {...register("description", {
+                  {...register("short_description", {
                     required: "Description is requiered",
                     validate: (value) => {
                       const wordCount = value.trim().split(/\s+/).length;
@@ -348,7 +375,7 @@ const Page = () => {
                           Cash On Delivery*
                         </label>
                         <select
-                          {...register("cash_on_delivery", {
+                          {...register("cashOnDelivery", {
                             required: "Cash On Delivery is required",
                           })}
                           defaultValue="yes"
@@ -425,7 +452,7 @@ const Page = () => {
                   <p>Failed to get Subcategories</p>
                 ) : (
                   <Controller
-                    name="subcategory"
+                    name="subCategory"
                     control={control}
                     rules={{ required: "Subcategory is required" }}
                     render={({ field }) => (
@@ -469,7 +496,7 @@ const Page = () => {
                     validate: (value) => {
                       const wordCount = value
                         ?.split(/\s+/)
-                        .filter((word: string) => word).lenght;
+                        .filter((word: string) => word).length;
                       return (
                         wordCount >= 100 ||
                         "Description must be at least 100 words!"
@@ -499,7 +526,7 @@ const Page = () => {
                   {...register("video_url", {
                     pattern: {
                       value:
-                        /^http:\/\/(www\.)?youtube\.com\/embed\/[a-zA-Z0-9_-]+$/,
+                        /^https:\/\/(www\.)?youtube\.com\/embed\/[a-zA-Z0-9_-]+$/,
                       message:
                         "Invalid Youtube embed URL! Use format: https://www.youtube.com",
                     },
@@ -534,7 +561,7 @@ const Page = () => {
                 <Input
                   label="Sell Price"
                   placeholder="$20"
-                  {...register("sell_price", {
+                  {...register("sale_price", {
                     valueAsNumber: true,
                     min: { value: 1, message: "Price must be at least 1" },
                     validate: (value) => {
@@ -611,7 +638,7 @@ const Page = () => {
                               )
                             : [...currentSelection, code.id];
 
-                          setValue("discountCodes", updatedSelection);
+                          setValue("discount_codes", updatedSelection);
                         }}
                       >
                         {code?.public_name} ({code.discountValue}{" "}

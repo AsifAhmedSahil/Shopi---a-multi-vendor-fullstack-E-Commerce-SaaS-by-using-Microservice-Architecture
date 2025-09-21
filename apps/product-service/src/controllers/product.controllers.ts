@@ -1,4 +1,8 @@
-import { AuthenticationError, NotFoundError, ValidationError } from "@packages/error-handler";
+import {
+  AuthenticationError,
+  NotFoundError,
+  ValidationError,
+} from "@packages/error-handler";
 import prisma from "@packages/lib/prisma";
 import { ObjectId } from "mongodb";
 import { NextFunction, Request, Response } from "express";
@@ -179,7 +183,7 @@ export const createProduct = async (
   try {
     const {
       title,
-      description,
+      short_description,
       detailed_description,
       warranty,
       custom_specifications,
@@ -200,10 +204,13 @@ export const createProduct = async (
       images = [],
     } = req.body;
 
+    console.log("Images to create:", images);
+
+
     if (
       !title ||
       !slug ||
-      !description ||
+      !short_description ||
       !category ||
       !subCategory ||
       !sale_price ||
@@ -215,10 +222,60 @@ export const createProduct = async (
       return next(new ValidationError("Missing required fields!"));
     }
 
-    if(!req.seller.id){
-      return next(new AuthenticationError("only seller can create products!"))
+    if (!req.seller.id) {
+      return next(new AuthenticationError("only seller can create products!"));
     }
 
+    const slugChecking = await prisma.products.findUnique({
+      where: {
+        slug,
+      },
+    });
+
+    if (slugChecking) {
+      return next(
+        new ValidationError("Slug already exist! Please use a different slug!")
+      );
+    }
+
+    const newProduct = await prisma.products.create({
+      data: {
+        title,
+        short_description,
+        detailed_description,
+        warranty,
+        cashOnDelivery: cash_on_delivery,
+        slug,
+        shopId: req.seller?.shop?.id!,
+        tags: Array.isArray(tags) ? tags : tags.split(","),
+        brand,
+        video_url,
+        category,
+        subCategory,
+        colors: colors || [],
+        discount_codes: discountCodes?.map((codeId: string) => codeId),
+        sizes: sizes || [],
+        stock: parseInt(stock),
+        sale_price: parseFloat(sale_price),
+        regular_price: parseFloat(regular_price),
+        custom_properties: customProperties || {},
+        custom_specifications: custom_specifications || {},
+        images: {
+          create: images.filter((img:any) => img && img.fileId && img.file_url).map((img:any)=>({
+          file_id:img.fileId,
+          url:img.file_url
+        }))
+        },
+      },
+      include: { images: true },
+    });
     
-  } catch (error) {}
+
+    res.status(201).json({
+      success: true,
+      newProduct,
+    });
+  } catch (error) {
+    console.log(error);
+  }
 };

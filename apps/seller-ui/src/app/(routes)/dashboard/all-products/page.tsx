@@ -21,6 +21,7 @@ import {
   Star,
   Trash,
 } from "lucide-react";
+import DeleteConfirmationModal from "apps/seller-ui/src/shared/components/modals/delete.confirmation.modal";
 
 const fetchProducts = async () => {
   const res = await axiosInstance.get("/product/api/get-shop-products");
@@ -31,7 +32,7 @@ const ProductList = () => {
   const [globalFilter, setGlobalFilter] = useState("");
   const [analyticsData, setAnalyticsData] = useState(null);
   const [showAnalytics, setShowAnalytics] = useState(false);
-  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(true);
   const [selectedProduct, setSelectedProduct] = useState<any>();
 
   const queryClient = useQueryClient();
@@ -239,6 +240,18 @@ const ProductList = () => {
             </tbody>
           </table>
         )}
+
+{
+  showDeleteModal && (
+    <DeleteConfirmationModal
+    product={selectedProduct}
+    onClose={()=> setShowDeleteModal(false)}
+    onConfirm={()=> deleteMutation.mutate(selectedProduct?.id)}
+    onRestore={()=> restoreMutation.mutate(selectedProduct?.id)}
+    />
+  )
+}
+
       </div>
     </div>
   );

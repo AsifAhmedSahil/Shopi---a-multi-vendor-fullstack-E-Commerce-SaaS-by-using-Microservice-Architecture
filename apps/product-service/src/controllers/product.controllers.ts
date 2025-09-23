@@ -206,7 +206,6 @@ export const createProduct = async (
 
     console.log("Images to create:", images);
 
-
     if (
       !title ||
       !slug ||
@@ -261,15 +260,16 @@ export const createProduct = async (
         custom_properties: customProperties || {},
         custom_specifications: custom_specifications || {},
         images: {
-          create: images.filter((img:any) => img && img.fileId && img.file_url).map((img:any)=>({
-          file_id:img.fileId,
-          url:img.file_url
-        }))
+          create: images
+            .filter((img: any) => img && img.fileId && img.file_url)
+            .map((img: any) => ({
+              file_id: img.fileId,
+              url: img.file_url,
+            })),
         },
       },
       include: { images: true },
     });
-    
 
     res.status(201).json({
       success: true,
@@ -280,26 +280,78 @@ export const createProduct = async (
   }
 };
 
-
 // get logged in seller products
 
-export const getShopProducts = async (req:any,res:Response,next: NextFunction) =>{
+export const getShopProducts = async (
+  req: any,
+  res: Response,
+  next: NextFunction
+) => {
   try {
     const products = await prisma.products.findMany({
       where: {
-        shopId: req.seller?.shop?.id
+        shopId: req.seller?.shop?.id,
       },
-      include:{
-        images:true 
+      include: {
+        images: true,
       },
     });
 
     res.status(201).json({
-      success:true,
-      products
+      success: true,
+      products,
+    });
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+// delete product
+
+export const deleteProduct = async (
+  req: any,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { productId } = req.params;
+    const sellerId = req.seller?.shop?.id;
+
+    const product = await prisma.products.findUnique({
+      where: { id: productId },
+      select: { id: true, shopId: true, isDeleted: true },
+    });
+
+    if (!product) {
+      return next(new ValidationError("product not found!"));
+    }
+
+    if (product.shopId !== sellerId) {
+      return next(new ValidationError("unauthorized action"));
+    }
+
+    if (product.isDeleted) {
+      return next(new ValidationError("product is already deleted!"));
+    }
+
+    const deletedProduct = await prisma.products.update({
+      where: { id: productId },
+      data: {
+        isDeleted: true,
+        deletedAt: new Date(Date.now() + 24 * 60 * 60 * 1000),
+      },
+    });
+
+    return res.status(200).json({
+    message: "product is scheduled for deletion in 24 hours, You can restore it within this time ",
+    deletedAt: deletedProduct.deletedAt
+    
     })
   } catch (error) {
-    console.log(error)
+    console.log(error);
   }
+};
 
-}
+
+// restore product
+

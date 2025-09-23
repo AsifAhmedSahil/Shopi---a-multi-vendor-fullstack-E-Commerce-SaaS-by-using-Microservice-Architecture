@@ -32,7 +32,7 @@ const ProductList = () => {
   const [globalFilter, setGlobalFilter] = useState("");
   const [analyticsData, setAnalyticsData] = useState(null);
   const [showAnalytics, setShowAnalytics] = useState(false);
-  const [showDeleteModal, setShowDeleteModal] = useState(true);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<any>();
 
   const queryClient = useQueryClient();
@@ -42,6 +42,11 @@ const ProductList = () => {
     queryFn: fetchProducts,
     staleTime: 1000 * 60 * 5,
   });
+
+  const openDeleteModal = (product: any) => {
+    setSelectedProduct(product);
+    setShowDeleteModal(true);
+  };
 
   const columns = useMemo(
     () => [
@@ -144,7 +149,7 @@ const ProductList = () => {
             </button>
             <button
               className="text-red-400 hover:text-red-300 transition"
-              // onClick={() => openDeleteModal(row.original)}
+              onClick={() => openDeleteModal(row.original)}
             >
               <Trash size={18} />
             </button>
@@ -241,17 +246,14 @@ const ProductList = () => {
           </table>
         )}
 
-{
-  showDeleteModal && (
-    <DeleteConfirmationModal
-    product={selectedProduct}
-    onClose={()=> setShowDeleteModal(false)}
-    onConfirm={()=> deleteMutation.mutate(selectedProduct?.id)}
-    onRestore={()=> restoreMutation.mutate(selectedProduct?.id)}
-    />
-  )
-}
-
+        {showDeleteModal && (
+          <DeleteConfirmationModal
+            product={selectedProduct}
+            onClose={() => setShowDeleteModal(false)}
+            // onConfirm={()=> deleteMutation.mutate(selectedProduct?.id)}
+            // onRestore={()=> restoreMutation.mutate(selectedProduct?.id)}
+          />
+        )}
       </div>
     </div>
   );

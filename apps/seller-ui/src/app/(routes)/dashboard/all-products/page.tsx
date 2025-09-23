@@ -8,7 +8,7 @@ import {
   flexRender,
 } from "@tanstack/react-table";
 import axiosInstance from "apps/seller-ui/src/utils/axiosInstance";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import Image from "next/image";
 import Link from "next/link";
 import {
@@ -26,6 +26,15 @@ import DeleteConfirmationModal from "apps/seller-ui/src/shared/components/modals
 const fetchProducts = async () => {
   const res = await axiosInstance.get("/product/api/get-shop-products");
   return res?.data?.products;
+};
+
+const deleteProduct = async (productId: string) => {
+  console.log("deleting...")
+  await axiosInstance.delete(`/product/api/delete-product/${productId}`);
+
+};
+const restoreProduct = async (productId: string) => {
+  await axiosInstance.delete(`/product/api/restore-product/${productId}`);
 };
 
 const ProductList = () => {
@@ -47,6 +56,22 @@ const ProductList = () => {
     setSelectedProduct(product);
     setShowDeleteModal(true);
   };
+
+  // delete product mutation
+  const deleteMutation = useMutation({
+    mutationFn: deleteProduct,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["shop-products"] });
+      setShowDeleteModal(false);
+    },
+  });
+  const restoreMutation = useMutation({
+    mutationFn: restoreProduct,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["shop-products"] });
+      setShowDeleteModal(false);
+    },
+  });
 
   const columns = useMemo(
     () => [
@@ -250,8 +275,8 @@ const ProductList = () => {
           <DeleteConfirmationModal
             product={selectedProduct}
             onClose={() => setShowDeleteModal(false)}
-            // onConfirm={()=> deleteMutation.mutate(selectedProduct?.id)}
-            // onRestore={()=> restoreMutation.mutate(selectedProduct?.id)}
+            onConfirm={()=> deleteMutation.mutate(selectedProduct?.id)}
+            onRestore={()=> restoreMutation.mutate(selectedProduct?.id)}
           />
         )}
       </div>

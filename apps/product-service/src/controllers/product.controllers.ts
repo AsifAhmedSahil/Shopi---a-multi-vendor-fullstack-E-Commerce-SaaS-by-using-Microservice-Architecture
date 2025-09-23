@@ -343,15 +343,56 @@ export const deleteProduct = async (
     });
 
     return res.status(200).json({
-    message: "product is scheduled for deletion in 24 hours, You can restore it within this time ",
-    deletedAt: deletedProduct.deletedAt
-    
-    })
+      message:
+        "product is scheduled for deletion in 24 hours, You can restore it within this time ",
+      deletedAt: deletedProduct.deletedAt,
+    });
   } catch (error) {
     console.log(error);
   }
 };
 
-
 // restore product
 
+export const restoreProduct = async (
+  req: any,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { productId } = req.params;
+    const sellerId = req.seller?.shop?.id;
+
+    const product = await prisma.products.findUnique({
+      where: { id: productId },
+      select: { id: true, shopId: true, isDeleted: true },
+    });
+
+    if (!product) {
+      return next(new ValidationError("product is not  in database!"));
+    }
+
+    if (product.shopId !== sellerId) {
+      return next(new ValidationError("Unauthorized access!"));
+    }
+
+    if (!product.isDeleted) {
+      return res
+        .status(400)
+        .json({ message: "Product is not in deleted state!" });
+    }
+
+    await prisma.products.update({
+      where: { id: productId },
+      data: {
+        isDeleted: false,
+        deletedAt: null,
+      },
+    });
+
+    return res.status(200).json({ message: "Product successfully restored" });
+  } catch (error) {
+    // console.log(error)
+    return res.status(500).json({ message: "Error restoring product", error });
+  }
+};

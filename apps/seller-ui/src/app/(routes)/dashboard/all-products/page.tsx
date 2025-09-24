@@ -27,6 +27,7 @@ const fetchProducts = async () => {
   const res = await axiosInstance.get("/product/api/get-shop-products");
   return res?.data?.products;
 };
+// update
 
 const deleteProduct = async (productId: string) => {
   console.log("deleting...")

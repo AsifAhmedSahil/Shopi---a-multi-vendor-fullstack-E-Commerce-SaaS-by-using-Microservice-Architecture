@@ -412,20 +412,13 @@ export const getAllProducts = async (
     const type = req.query.type;
 
     const baseFilter = {
-      OR: [
-        {
-          starting_date: null,
-        },
-        {
-          ending_date: null,
-        },
-      ],
+      isDeleted: false, // ✅ only fetch active products
     };
 
     const orderBy: Prisma.productsOrderByWithRelationInput =
       type === "latest"
-        ? { createdAt: "desc" as Prisma.SortOrder }
-        : { totalSales: "desc" as Prisma.SortOrder };
+        ? { createdAt: "desc" }
+        : { totalSales: "desc" };
 
     const [products, total, top10products] = await Promise.all([
       prisma.products.findMany({
@@ -436,12 +429,11 @@ export const getAllProducts = async (
           Shop: true,
         },
         where: baseFilter,
-        orderBy: {
-          totalSales: "desc",
-        },
+        orderBy,
       }),
 
       prisma.products.count({ where: baseFilter }),
+
       prisma.products.findMany({
         take: 10,
         where: baseFilter,
@@ -461,3 +453,4 @@ export const getAllProducts = async (
     next(error);
   }
 };
+

@@ -4,14 +4,35 @@ import Hero from "../shared/modules/hero";
 import SectionTitle from "../shared/components/section/section-title";
 import { useQuery } from "@tanstack/react-query";
 import axiosInstance from "../utils/axiosInstance";
+import ProductCard from "../shared/components/cards/product-card";
 
 const page = () => {
-  const {} = useQuery({
-    queryKey:["products"],
-    queryFn: async () =>{
-      const res = axiosInstance.get("/product/api/get-all-products?page-1&limit=10")
-    }
-  })
+  const {
+    data: products,
+    isLoading,
+    isError,
+  } = useQuery({
+    queryKey: ["products"],
+    queryFn: async () => {
+      const res = await axiosInstance.get(
+        "/product/api/get-all-products?page-1&limit=10"
+      );
+      return res.data.products;
+    },
+    staleTime: 1000 * 60 * 2,
+  });
+  const { data: latestProducts } = useQuery({
+    queryKey: ["latest-products"],
+    queryFn: async () => {
+      const res = await axiosInstance.get(
+        "/product/api/get-all-products?page-1&limit=10&type=latest"
+      );
+      return res.data.products;
+    },
+    staleTime: 1000 * 60 * 2,
+  });
+
+  console.log(products) 
   return (
     <div className="bg-[#f5f5f5]">
       <Hero />
@@ -21,7 +42,7 @@ const page = () => {
           <SectionTitle title="Suggested Products" />
         </div>
 
-        {
+        {isLoading && (
           <div className="grid grid-cols-1 sm:grid-cols-3 md:grid-cols-4 2xl:grid-cols-5 gap-5">
             {Array.from({ length: 10 }).map((_, index) => (
               <div
@@ -30,6 +51,19 @@ const page = () => {
               />
             ))}
           </div>
+        )}
+
+        {
+          !isLoading && !isError && (
+            <div className="m-auto gap-4 grid grid-cols-1 lg:grid-cols-4 md:grid-cols-2 pb-10">
+              {
+                products?.map((product:any)=>(
+                  <ProductCard key={product.id} product={product}/>
+                ))
+              }
+
+            </div>
+          )
         }
       </div>
     </div>

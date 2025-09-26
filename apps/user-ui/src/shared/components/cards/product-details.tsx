@@ -113,8 +113,36 @@ const ProductDetailsCard = ({
             </h3>
 
             <p className="mt-2 text-gray-700 w-full whitespace-pre-wrap ">
-                {data?.short_description}
+                {data?.short_description} {" "}
             </p>
+
+            {/* brand */}
+            {
+                data?.brand && (
+                    <p className="mt-2">
+                        <strong>Brand: </strong> {data.brand}
+                    </p>
+                )
+            }
+
+            {/* size options */}
+            {
+                data?.sizes?.length > 0 && (
+                    <div>
+                        <strong>Size: </strong>
+                        <div className="flex gap-2 mt-1">
+                            {
+                                data.sizes.map((size: string, index:number)=>(
+                                    <button key={index}>
+
+                                    </button>
+                                ))
+                            }
+
+                        </div>
+                    </div>
+                )
+            }
           </div>
         </div>
       </div>

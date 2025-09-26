@@ -2,8 +2,16 @@
 import React from "react";
 import Hero from "../shared/modules/hero";
 import SectionTitle from "../shared/components/section/section-title";
+import { useQuery } from "@tanstack/react-query";
+import axiosInstance from "../utils/axiosInstance";
 
 const page = () => {
+  const {} = useQuery({
+    queryKey:["products"],
+    queryFn: async () =>{
+      const res = axiosInstance.get("/product/api/get-all-products?page-1&limit=10")
+    }
+  })
   return (
     <div className="bg-[#f5f5f5]">
       <Hero />

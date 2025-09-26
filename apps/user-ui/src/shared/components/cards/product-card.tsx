@@ -2,6 +2,7 @@ import Link from "next/link";
 import React, { useEffect, useState } from "react";
 import ProductRating from "../ratings";
 import { Eye, Heart, ShoppingBag } from "lucide-react";
+import ProductDetailsCard from "./product-details";
 
 const ProductCard = ({
   product,
@@ -11,6 +12,7 @@ const ProductCard = ({
   isEvent?: boolean;
 }) => {
   const [timeLeft, setTimeLeft] = useState("");
+  const [open, setOpen] = useState(false);
 
   useEffect(() => {
     if (isEvent && product?.ending_date) {
@@ -117,17 +119,22 @@ const ProductCard = ({
           <Eye
             size={20}
             className="cursor-pointer text-[#4b5563] hover:scale-110 transition"
+            onClick={()=> setOpen(!open)}
+
           />
         </div>
 
         <div className="bg-white rounded-full p-[6px] shadow-md">
-            <ShoppingBag
+          <ShoppingBag
             size={20}
             className="cursor-pointer text-[#4b5563] hover:scale-110 transition"
           />
-
         </div>
       </div>
+      {
+        open && <ProductDetailsCard  data={product} setOpen={setOpen}/>
+
+      }
     </div>
   );
 };

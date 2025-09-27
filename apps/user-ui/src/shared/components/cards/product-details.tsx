@@ -2,7 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import React, { useState } from "react";
 import ProductRating from "../ratings";
-import { MapPin, MessageCircle, X } from "lucide-react";
+import { Heart, MapPin, MessageCircle, ShoppingCart, X } from "lucide-react";
 import { useRouter } from "next/navigation";
 
 const ProductDetailsCard = ({
@@ -13,8 +13,14 @@ const ProductDetailsCard = ({
   setOpen: (open: boolean) => void;
 }) => {
   const [activeImage, setActiveImage] = useState(0);
+  const [isSelected, setIsSelected] = useState(data?.colors?.[0] || "");
+  const [isSizeSelected, setIsSizeSelected] = useState(data?.sizes?.[0] || "");
+  const [quantity, setQuantity] = useState(1);
 
-  const router = useRouter()
+  const estimatedDelivery = new Date();
+  estimatedDelivery.setDate(estimatedDelivery.getDate() + 5);
+
+  const router = useRouter();
 
   return (
     <div
@@ -60,7 +66,6 @@ const ProductDetailsCard = ({
 
           <div className="w-full md:w-1/2 md:pl-8 mt-6 md:mt-0">
             {/* Seller Info */}
-
             <div className="border-b relative pb-3 border-gray-200 flex items-center justify-between">
               <div className="flex items-start gap-3">
                 <Image
@@ -84,65 +89,140 @@ const ProductDetailsCard = ({
 
                   {/* shop ratings */}
                   <span className="block mt-1">
-                    <ProductRating rating={data?.Shop?.ratings}/>
+                    <ProductRating rating={data?.Shop?.ratings} />
                   </span>
 
                   {/* shop locations */}
                   <p className="text-gray-600 mt-1 flex items-center gap-3">
-                    <MapPin size={20}/> {" "}
+                    <MapPin size={20} />{" "}
                     {data?.Shop?.address || "Location Not Available"}
                   </p>
                 </div>
-
-                
               </div>
               {/* chat with seller */}
-                <button className="flex cursor-pointer items-center gap-2 px-4 py-2 bg-blue-600 rounded-lg" 
-                onClick={() => router.push(`/inbox?shopId=${data?.Shop?.shopId}`)}
-                >
-                    <MessageCircle size={20} fill="white" stroke="white"/><span className="text-white"> Chat With Seller</span>
-                </button>
+              <button
+                className="flex cursor-pointer items-center gap-2 px-4 py-2 bg-blue-600 rounded-lg"
+                onClick={() =>
+                  router.push(`/inbox?shopId=${data?.Shop?.shopId}`)
+                }
+              >
+                <MessageCircle size={20} fill="white" stroke="white" />
+                <span className="text-white"> Chat With Seller</span>
+              </button>
 
-                <button className="absolute flex justify-end w-full  right-[-5px] top-[-5px] mt-[-10px] cursor-pointer " onClick={()=> setOpen(false)}>
-                    <X size={20} />
-                </button>
+              <button
+                className="absolute flex justify-end w-full  right-[-5px] top-[-5px] mt-[-10px] cursor-pointer "
+                onClick={() => setOpen(false)}
+              >
+                <X size={20} />
+              </button>
             </div>
-
-            <h3 className="text-xl font-semibold mt-3">
-                  {data?.title}
-            </h3>
-
+            <h3 className="text-xl font-semibold mt-3">{data?.title}</h3>
             <p className="mt-2 text-gray-700 w-full whitespace-pre-wrap ">
-                {data?.short_description} {" "}
+              {data?.short_description}{" "}
             </p>
-
             {/* brand */}
-            {
-                data?.brand && (
-                    <p className="mt-2">
-                        <strong>Brand: </strong> {data.brand}
-                    </p>
-                )
-            }
+            {data?.brand && (
+              <p className="mt-2">
+                <strong>Brand: </strong> {data.brand}
+              </p>
+            )}
+            {/* color and sizes  */}
+            <div className="flex flex-col md:flex-row items-center mt-4 gap-5">
+              {/* color options */}
 
-            {/* size options */}
-            {
-                data?.sizes?.length > 0 && (
-                    <div>
-                        <strong>Size: </strong>
-                        <div className="flex gap-2 mt-1">
-                            {
-                                data.sizes.map((size: string, index:number)=>(
-                                    <button key={index}>
+              {data?.colors?.length > 0 && (
+                <div>
+                  <strong>Color:</strong>
+                  <div className="flex mt-1 gap-2">
+                    {data.colors.map((color: string, index: string) => {
+                      <button
+                        key={index}
+                        className={`w-8 h-8 cursor-pointer rounded-full border-2 transition ${
+                          isSelected === color
+                            ? "border-gray-400 scale-110 shadow-md"
+                            : "border-transparent"
+                        }`}
+                        onClick={() => setIsSelected(color)}
+                        style={{ backgroundColor: color }}
+                      >
+                        {color}
+                      </button>;
+                    })}
+                  </div>
+                </div>
+              )}
+              {/* size options */}
+              {data?.sizes?.length > 0 && (
+                <div>
+                  <strong>Size: </strong>
+                  <div className="flex gap-2 mt-1">
+                    {data.sizes.map((size: string, index: number) => (
+                      <button
+                        key={index}
+                        className={`px-4 py-1 cursor-pointer rounded-md transition ${
+                          isSizeSelected === size
+                            ? "bg-gray-800 text-white"
+                            : "bg-gray-300 text-black"
+                        }`}
+                        onClick={() => setIsSizeSelected(size)}
+                      >
+                        {size}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+            {/* price section  */}
+            <div className="mt-5 flex items-center gap-4">
+              <h3 className="text-2xl font-semibold text-gray-900">
+                ${data?.sale_price}
+              </h3>
 
-                                    </button>
-                                ))
-                            }
+              {data?.regular_price && (
+                <h3 className="line-through text-red-600 text-lg font-semibold">
+                  ${data.regular_price}
+                </h3>
+              )}
+            </div>
+            <div className="mt-5 flex items-center gap-5">
+              <div className="flex items-center rounded-md">
+                <button
+                  className="px-3 cursor-pointer py-1 bg-gray-300 hover:bg-gray-400 text-black font-semibold rounded-l-md"
+                  onClick={() => setQuantity((prev) => Math.max(1, prev - 1))}
+                >
+                  -
+                </button>
+                <span className="px-4 bg-gray-100 py-1">{quantity}</span>
+                <button
+                  className="px-3 cursor-pointer py-1 bg-gray-300 hover:bg-gray-400 text-black font-semibold rounded-r-md"
+                  onClick={() => setQuantity((prev) => Math.max(1, prev + 1))}
+                >
+                  +
+                </button>
+              </div>
 
-                        </div>
-                    </div>
-                )
-            }
+              <button
+                className={`flex items-center gap-2 px-4 py-2 bg-[#ff5722] hover:bg-[#e64a19] text-white font-medium rounded-lg transition`}
+              >
+                <ShoppingCart size={18} /> Add To Cart
+              </button>
+              <button className="opacity-[.7] cursor-pointer">
+                <Heart size={30} fill="red" color="transparent" />
+              </button>
+            </div>
+            <div className="mt-3">
+              {data.stock > 0 ? (
+                <span className="text-green-600 font-semibold">In Stock</span>
+              ) : (
+                <span className="text-red-600 font-semibold">Out Of Stock</span>
+              )}
+            </div>{" "}
+            <div className="mt-3 text-gray-600 text-sm">
+              Estimated Delivery:{" "}
+              <strong>{estimatedDelivery.toDateString()}</strong>
+            </div>
           </div>
         </div>
       </div>

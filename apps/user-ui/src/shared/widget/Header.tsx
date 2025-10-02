@@ -6,9 +6,12 @@ import { IoPerson } from "react-icons/io5";
 import { CiHeart, CiShoppingCart } from "react-icons/ci";
 import HeaderBottom from "./HeaderBottom";
 import useUSer from "../../hooks/useHook";
+import { useStore } from "../../store";
 
 const Header = () => {
   const { user, isLoading } = useUSer();
+  const wishlist = useStore((state:any) =>state.wishlist);
+  const cart = useStore((state:any) =>state.cart);
   return (
     <div className="w-full bg-white">
       <div className="w-[80%] m-auto py-5 flex items-center justify-between">
@@ -62,13 +65,13 @@ const Header = () => {
             <Link href={"/wishlist"} className="relative">
               <CiHeart size={30} />
               <div className="w-5 h-5 rounded-full bg-red-500 border-white flex justify-center items-center absolute top-[-5px] right-[-5px]">
-                <span className="text-white font-semibold text-sm">0</span>
+                <span className="text-white font-semibold text-sm">{wishlist?.length}</span>
               </div>
             </Link>
             <Link href={"/cartlist"} className="relative">
               <CiShoppingCart size={30} />
               <div className="w-5 h-5 rounded-full bg-red-500 border-white flex justify-center items-center absolute top-[-5px] right-[-5px]">
-                <span className="text-white font-semibold text-sm">0</span>
+                <span className="text-white font-semibold text-sm">{cart?.length}</span>
               </div>
             </Link>
           </div>

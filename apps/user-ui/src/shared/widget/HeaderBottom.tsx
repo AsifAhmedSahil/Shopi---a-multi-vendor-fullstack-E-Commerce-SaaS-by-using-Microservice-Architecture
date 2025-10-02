@@ -7,12 +7,15 @@ import Link from "next/link";
 import { IoPerson } from "react-icons/io5";
 import { CiHeart, CiShoppingCart } from "react-icons/ci";
 import useUSer from "../../hooks/useHook";
+import { useStore } from "../../store";
 
 const HeaderBottom = () => {
   const [show, setShow] = useState(false);
   const [isSticky, setIsSticky] = useState(false);
-  const {user,isLoading} = useUSer()
- 
+  const { user, isLoading } = useUSer();
+
+  const wishlist = useStore((state: any) => state.wishlist);
+  const cart = useStore((state: any) => state.cart);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -75,48 +78,59 @@ const HeaderBottom = () => {
         <div>
           {isSticky && (
             <div className="flex items-center gap-8">
-          <div className="flex items-center gap-2">
-            {!isLoading && user ? (
-              <>
-                <Link href={"/profile"} className="border-2 w-[50px] h-[50px] rounded-full flex items-center justify-center border-gray-500">
-                  <IoPerson size={20} />
-                </Link>
+              <div className="flex items-center gap-2">
+                {!isLoading && user ? (
+                  <>
+                    <Link
+                      href={"/profile"}
+                      className="border-2 w-[50px] h-[50px] rounded-full flex items-center justify-center border-gray-500"
+                    >
+                      <IoPerson size={20} />
+                    </Link>
 
-                <Link href={"/profile"}>
-                  <span className="block font-medium">Hello,</span>
-                  <span className="font-medium">{user?.name?.split(" ")[0]}</span>
-                </Link>
-              </>
-            ) : (
-              <>
-                <Link
-                  href={"/login"}
-                  className="border-2 w-[50px] h-[50px] rounded-full flex items-center justify-center border-gray-500"
-                >
-                  <IoPerson size={20} />
-                </Link>
-                <Link href={"/"}>
-                  <span className="block font-medium">Hello,</span>
-                  <span className="font-medium">{isLoading ? "..." : "Sign In"}</span>
-                </Link>
-              </>
-            )}
-          </div>
-          <div className="flex items-center gap-5">
-            <Link href={"/wishlist"} className="relative">
-              <CiHeart size={30} />
-              <div className="w-5 h-5 rounded-full bg-red-500 border-white flex justify-center items-center absolute top-[-5px] right-[-5px]">
-                <span className="text-white font-semibold text-sm">0</span>
+                    <Link href={"/profile"}>
+                      <span className="block font-medium">Hello,</span>
+                      <span className="font-medium">
+                        {user?.name?.split(" ")[0]}
+                      </span>
+                    </Link>
+                  </>
+                ) : (
+                  <>
+                    <Link
+                      href={"/login"}
+                      className="border-2 w-[50px] h-[50px] rounded-full flex items-center justify-center border-gray-500"
+                    >
+                      <IoPerson size={20} />
+                    </Link>
+                    <Link href={"/"}>
+                      <span className="block font-medium">Hello,</span>
+                      <span className="font-medium">
+                        {isLoading ? "..." : "Sign In"}
+                      </span>
+                    </Link>
+                  </>
+                )}
               </div>
-            </Link>
-            <Link href={"/cartlist"} className="relative">
-              <CiShoppingCart size={30} />
-              <div className="w-5 h-5 rounded-full bg-red-500 border-white flex justify-center items-center absolute top-[-5px] right-[-5px]">
-                <span className="text-white font-semibold text-sm">0</span>
+              <div className="flex items-center gap-5">
+                <Link href={"/wishlist"} className="relative">
+                  <CiHeart size={30} />
+                  <div className="w-5 h-5 rounded-full bg-red-500 border-white flex justify-center items-center absolute top-[-5px] right-[-5px]">
+                    <span className="text-white font-semibold text-sm">
+                      {wishlist?.length}
+                    </span>
+                  </div>
+                </Link>
+                <Link href={"/cartlist"} className="relative">
+                  <CiShoppingCart size={30} />
+                  <div className="w-5 h-5 rounded-full bg-red-500 border-white flex justify-center items-center absolute top-[-5px] right-[-5px]">
+                    <span className="text-white font-semibold text-sm">
+                      {cart?.length}
+                    </span>
+                  </div>
+                </Link>
               </div>
-            </Link>
-          </div>
-        </div>
+            </div>
           )}
         </div>
       </div>

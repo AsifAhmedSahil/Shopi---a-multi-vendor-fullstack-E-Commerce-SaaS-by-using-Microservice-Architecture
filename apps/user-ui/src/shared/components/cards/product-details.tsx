@@ -4,6 +4,10 @@ import React, { useState } from "react";
 import ProductRating from "../ratings";
 import { Heart, MapPin, MessageCircle, ShoppingCart, X } from "lucide-react";
 import { useRouter } from "next/navigation";
+import useUSer from "apps/user-ui/src/hooks/useHook";
+import useLocationTracking from "apps/user-ui/src/hooks/useLocation";
+import useDeviceTracking from "apps/user-ui/src/hooks/useDeviceTracking";
+import { useStore } from "apps/user-ui/src/store";
 
 const ProductDetailsCard = ({
   data,
@@ -22,6 +26,19 @@ const ProductDetailsCard = ({
 
   const router = useRouter();
 
+  const user = useUSer();
+  const location = useLocationTracking();
+  const deviceInfo = useDeviceTracking();
+  const addToCard = useStore((state: any) => state.addToCart);
+  const addToWishlist = useStore((state: any) => state.addToWishlist);
+  const removeFromWishlist = useStore((state: any) => state.removeFromWishlist);
+  const wishlist = useStore((state: any) => state.wishlist);
+  const isWishListed = wishlist.some((item: any) => item.id === data.id);
+  const cart = useStore((state: any) => state.cart);
+  const isInCart = cart.some((item: any) => item.id === data.id);
+  const removeFromCart = useStore((state: any) => state.removeFromCart);
+
+  const [selectedOptions, setSelectedOptions] = useState({});
   return (
     <div
       className="fixed flex items-center justify-center top-0 left-0 h-screen w-full bg-[#0000001d] z-50"
@@ -205,11 +222,37 @@ const ProductDetailsCard = ({
 
               <button
                 className={`flex items-center gap-2 px-4 py-2 bg-[#ff5722] hover:bg-[#e64a19] text-white font-medium rounded-lg transition`}
+                disabled={isInCart}
+                onClick={() =>
+                  isInCart
+                    ? removeFromCart(data.id, user, location, deviceInfo)
+                    : addToCard(
+                        { ...data, quantity: 1 },
+                        user,
+                        location,
+                        deviceInfo
+                      )
+                }
               >
                 <ShoppingCart size={18} /> Add To Cart
               </button>
               <button className="opacity-[.7] cursor-pointer">
-                <Heart size={30} fill="red" color="transparent" />
+                <Heart
+                  size={20}
+                  className="cursor-pointer hover:scale-110 transition"
+                  fill={isWishListed ? "red" : "transparent"}
+                  stroke={isWishListed ? "red" : "#4B5563"}
+                  onClick={() =>
+                    isWishListed
+                      ? removeFromWishlist(data.id, user, location, deviceInfo)
+                      : addToWishlist(
+                          { ...data, quantity: 1 },
+                          user,
+                          location,
+                          deviceInfo
+                        )
+                  }
+                />
               </button>
             </div>
             <div className="mt-3">

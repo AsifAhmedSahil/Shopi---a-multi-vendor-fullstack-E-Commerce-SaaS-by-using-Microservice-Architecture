@@ -17,17 +17,32 @@ const WishListPage = () => {
   const wishlist = useStore((state: any) => state.wishlist);
 
   const decreaseQuantity = (id: string) => {
-    useStore.setState((state: any) =>({
-        wishlist:state.wishlist.map((item:any) => 
-        item.id === id && item.quantity > 1 ?
-        {
-            ...item, quantity:item.quantity - 1
-        }: item 
-        ),
-    })
-     
-    );
+    useStore.setState((state: any) => ({
+      wishlist: state.wishlist.map((item: any) =>
+        item.id === id && item.quantity > 1
+          ? {
+              ...item,
+              quantity: item.quantity - 1,
+            }
+          : item
+      ),
+    }));
   };
+
+
+  const increaseQuantity = (id:string) =>{
+    useStore.setState((state:any) => ({
+      wishlist:state.wishlist.map((item:any)=> item.id === id ? {
+        ...item,
+        quantity: (item.quantity ?? 1) + 1
+      } : item )
+    }))
+  }
+
+  const removeItem = (id:string) =>{
+    removeFromWishlist(id,user,location,deviceInfo)
+
+  }
   return (
     <div className="w-full bg-white">
       <div className="md:w-[80%] w-[95%] mx-auto min-h-screen">
@@ -89,10 +104,30 @@ const WishListPage = () => {
                           -
                         </button>
                         <span className="px-4">{item?.quantity}</span>
-                        <button className="text-black cursor-pointer text-xl">
+                        <button className="text-black cursor-pointer text-xl"
+                          onClick={() => increaseQuantity(item.id)}
+                        >
                           +
                         </button>
                       </div>
+                    </td>
+
+                    <td>
+                      <button className="px-4 py-2 bg-blue-500 hover:bg-blue-700 text-white transition-all rounded-md cursor-pointer "
+                      onClick={()=> addToCart(item,user,location,deviceInfo)}
+                      >
+                        Add To Cart
+
+                      </button>
+                    </td>
+
+                    <td>
+                      <button className="px-4 py-2 text-red-500 hover:text-red-700 font-bold transition duration-200 rounded-md cursor-pointer "
+                      onClick={()=> removeItem(item.id)}
+                      >
+                       x Remove
+
+                      </button>
                     </td>
                   </tr>
                 ))}

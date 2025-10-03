@@ -68,7 +68,7 @@ const Header = () => {
                 <span className="text-white font-semibold text-sm">{wishlist?.length}</span>
               </div>
             </Link>
-            <Link href={"/cartlist"} className="relative">
+            <Link href={"/cart"} className="relative">
               <CiShoppingCart size={30} />
               <div className="w-5 h-5 rounded-full bg-red-500 border-white flex justify-center items-center absolute top-[-5px] right-[-5px]">
                 <span className="text-white font-semibold text-sm">{cart?.length}</span>

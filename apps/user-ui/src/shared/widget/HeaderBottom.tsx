@@ -12,7 +12,7 @@ import { useStore } from "../../store";
 const HeaderBottom = () => {
   const [show, setShow] = useState(false);
   const [isSticky, setIsSticky] = useState(false);
-  const { user, isLoading } = useUSer();
+  const { user, isLoading } = useUSer(); 
 
   const wishlist = useStore((state: any) => state.wishlist);
   const cart = useStore((state: any) => state.cart);

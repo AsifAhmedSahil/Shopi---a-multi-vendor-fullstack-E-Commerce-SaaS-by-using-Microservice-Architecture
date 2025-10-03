@@ -88,7 +88,7 @@ const WishListPage = () => {
                         className="rounded"
                       />
 
-                      <span>{item.title}</span>
+                      <span className="font-medium">{item.title}</span>
                     </td>
 
                     <td className="px-6 text-lg">

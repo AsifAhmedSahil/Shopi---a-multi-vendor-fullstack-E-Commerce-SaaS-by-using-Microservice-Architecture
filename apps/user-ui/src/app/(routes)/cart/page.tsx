@@ -29,7 +29,7 @@ const CartPage = () => {
   console.log(cart);
 
   const decreaseQuantity = (id: string) => {
-    console.log(id)
+    console.log(id);
     useStore.setState((state: any) => ({
       cart: state.cart.map((item: any) =>
         item.id === id && item.quantity > 1
@@ -271,12 +271,12 @@ const CartPage = () => {
                   <span>${(subtotal - discountAmount).toFixed(2)}</span>
                 </div>
 
-                <button disabled={loading} 
-                className="w-full flex items-center justify-center gap-2 cursor-pointer mt-4 py-3 text-white bg-[#010f1c] hover:bg-blue-600 transition-all rounded-md"
+                <button
+                  disabled={loading}
+                  className="w-full flex items-center justify-center gap-2 cursor-pointer mt-4 py-3 text-white bg-[#010f1c] hover:bg-blue-600 transition-all rounded-md"
                 >
-                  {loading && <Loader2 className="animate-spin w-5 h-5"/>}
+                  {loading && <Loader2 className="animate-spin w-5 h-5" />}
                   {loading ? "Redirecting..." : "Proceed To Checkout"}
-
                 </button>
               </div>
             </div>

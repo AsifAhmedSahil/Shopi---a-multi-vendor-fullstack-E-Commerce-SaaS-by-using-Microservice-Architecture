@@ -416,9 +416,7 @@ export const getAllProducts = async (
     };
 
     const orderBy: Prisma.productsOrderByWithRelationInput =
-      type === "latest"
-        ? { createdAt: "desc" }
-        : { totalSales: "desc" };
+      type === "latest" ? { createdAt: "desc" } : { totalSales: "desc" };
 
     const [products, total, top10products] = await Promise.all([
       prisma.products.findMany({
@@ -454,3 +452,29 @@ export const getAllProducts = async (
   }
 };
 
+// get product details
+
+export const getProductDetails = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const product = await prisma.products.findUnique({
+      where: {
+        slug: req.params.slug!,
+      },
+      include: {
+        images: true,
+        Shop: true,
+      },
+    });
+
+    res.status(201).json({
+      success: true,
+      product,
+    });
+  } catch (error) {
+    return next(error)
+  }
+};

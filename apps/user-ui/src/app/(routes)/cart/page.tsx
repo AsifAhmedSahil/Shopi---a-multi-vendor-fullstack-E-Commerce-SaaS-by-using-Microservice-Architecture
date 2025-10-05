@@ -4,6 +4,7 @@ import useDeviceTracking from "apps/user-ui/src/hooks/useDeviceTracking";
 import useUSer from "apps/user-ui/src/hooks/useHook";
 import useLocationTracking from "apps/user-ui/src/hooks/useLocation";
 import { useStore } from "apps/user-ui/src/store";
+import { Loader2 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -21,39 +22,47 @@ const CartPage = () => {
   const [loading, setLoading] = useState(false);
   const [discountedProductId, setDiscountedProductId] = useState("");
   const [discountPercent, setDiscountPercent] = useState(0);
+  const [discountAmount, setDiscountAmount] = useState(0);
+  const [couponCode, setCouponCode] = useState("");
+  const [selectedAddressId, setSelectedAddressId] = useState("");
 
   console.log(cart);
 
-    const decreaseQuantity = (id: string) => {
-      useStore.setState((state: any) => ({
-        wishlist: state.cart.map((item: any) =>
-          item.id === id && item.quantity > 1
-            ? {
-                ...item,
-                quantity: item.quantity - 1,
-              }
-            : item
-        ),
-      }));
-    };
-  
-  
-    const increaseQuantity = (id:string) =>{
-      useStore.setState((state:any) => ({
-        wishlist:state.cart.map((item:any)=> item.id === id ? {
-          ...item,
-          quantity: (item.quantity ?? 1) + 1
-        } : item )
-      }))
-    }
+  const decreaseQuantity = (id: string) => {
+    console.log(id);
+    useStore.setState((state: any) => ({
+      cart: state.cart.map((item: any) =>
+        item.id === id && item.quantity > 1
+          ? {
+              ...item,
+              quantity: item.quantity - 1,
+            }
+          : item
+      ),
+    }));
+  };
 
-    const removeItem = (id:string) =>{
-      removeFromCart(id,user,location,deviceInfo)
-    }
+  const increaseQuantity = (id: string) => {
+    useStore.setState((state: any) => ({
+      cart: state.cart.map((item: any) =>
+        item.id === id
+          ? {
+              ...item,
+              quantity: (item.quantity ?? 1) + 1,
+            }
+          : item
+      ),
+    }));
+  };
 
-    const subtotal = cart.reduce(
-      (total:number,item:any) => total + item.quantity * item.sale_price,0
-    )
+  const removeItem = (id: string) => {
+    removeFromCart(id, user, location, deviceInfo);
+  };
+
+  const subtotal = cart.reduce(
+    (total: number, item: any) => total + item.quantity * item.sale_price,
+    0
+  );
   return (
     <div className="w-full bg-white">
       <div className="md:w-[80%] w-[95%] mx-auto min-h-screen">
@@ -153,7 +162,7 @@ const CartPage = () => {
                       )}
                     </td>
                     <td>
-                        <div className="flex justify-center items-center border border-gray-200 rounded-[200px] w-[90px] p-[2px]">
+                      <div className="flex justify-center items-center border border-gray-200 rounded-[200px] w-[90px] p-[2px]">
                         <button
                           className="text-black cursor-pointer text-xl"
                           onClick={() => decreaseQuantity(item.id)}
@@ -161,7 +170,8 @@ const CartPage = () => {
                           -
                         </button>
                         <span className="px-4">{item?.quantity}</span>
-                        <button className="text-black cursor-pointer text-xl"
+                        <button
+                          className="text-black cursor-pointer text-xl"
                           onClick={() => increaseQuantity(item.id)}
                         >
                           +
@@ -170,17 +180,106 @@ const CartPage = () => {
                     </td>
 {/* update */}
                     <td>
-                      <button className="px-4 py-2 text-red-500 hover:text-red-700 font-bold transition duration-200 rounded-md cursor-pointer "
-                      onClick={()=> removeItem(item?.id)}
+                      <button
+                        className="px-4 py-2 text-red-500 hover:text-red-700 font-bold transition duration-200 rounded-md cursor-pointer "
+                        onClick={() => removeItem(item?.id)}
                       >
-                       x Remove
-
+                        x Remove
                       </button>
                     </td>
                   </tr>
                 ))}
               </tbody>
             </table>
+
+            <div className="p-6 shadow-md w-full lg:w-[30%] bg-[#f9f9f9] rounded-lg">
+              {discountAmount > 0 && (
+                <div className="flex justify-between items-center text-[#010f1c] text-[16px] font-medium pb-1">
+                  <span className="font-bold">
+                    Discount ({discountAmount}%)
+                  </span>
+                  <span className="text-green-600">
+                    - ${discountAmount.toFixed(2)}
+                  </span>
+                </div>
+              )}
+
+              <div className="flex justify-between items-center text-[#100f1c] text-[20px] font-[550] pb-3">
+                <span className="font-bold">Subtotal</span>
+                <span>${(subtotal - discountAmount).toFixed(2)}</span>
+              </div>
+
+              <hr className="my-4 text-slate-200" />
+
+              <div className="mb-4">
+                <h4 className="mb-[7px] font-[500] text-[15px]">
+                  Have a Coupon?
+                </h4>
+
+                <div className="flex ">
+                  <input
+                    type="text"
+                    value={couponCode}
+                    onChange={(e: any) => setCouponCode(e.target.value)}
+                    placeholder="Enter Coupon Code"
+                    className="w-full p-2 border-x-gray-200 rounded-l-md focus:outline-none focus:border-blue-500"
+                  />
+
+                  <button
+                    className="bg-blue-500 text-white hover:bg-blue-700 px-4 rounded-r-md transition-all"
+                    // onClick={()=> couponCodeApply}
+                  >
+                    Apply
+                  </button>
+
+                  {/* {
+                    error && (
+                      <p className="text-sm pt-2 text-red-500 ">{error}</p>
+                    )
+                  } */}
+                </div>
+                <hr className="my-4 text-slate-200" />
+
+                <div className="mb-4">
+                  <h4 className="mb-[7px] font-medium text-[15px]">
+                    Select Shipping Address
+                  </h4>
+                  <select
+                    className="w-full p-2 border-gray-200 rounded-md focus:outline-none focus:border-blue-500"
+                    value={selectedAddressId}
+                    onChange={(e: any) => setSelectedAddressId(e.target.value)}
+                  >
+                    <option value="123">Home - Ctg - BD</option>
+                  </select>
+                </div>
+                <hr className="my-4 text-slate-200" />
+                <div className="mb-4">
+                  <h4 className="mb-[7px] font-[500] text-[15px]">
+                    Select Payment Method
+                  </h4>
+
+                  <select className="w-full p-2 border-gray-200 rounded-md focus:outline-none focus:border-blue-500">
+                    <option value="credit_card">Online Payment</option>
+                    <option value="cash_on_delivery">Cash On Delivery</option>
+                  </select>
+                </div>
+
+                <hr className="my-4 text-slate-200" />
+
+                <div className="flex justify-between items-center text-[#010f1c] text-[20px] font-[550] pb-3">
+                  <span className="font-bold">Total</span>
+                  <span>${(subtotal - discountAmount).toFixed(2)}</span>
+                </div>
+
+                <button
+                  disabled={loading}
+                  className="w-full flex items-center justify-center gap-2 cursor-pointer mt-4 py-3 text-white bg-[#010f1c] hover:bg-blue-600 transition-all rounded-md"
+                >
+                  {loading && <Loader2 className="animate-spin w-5 h-5" />}
+                  {loading ? "Redirecting..." : "Proceed To Checkout"}
+                </button>
+              </div>
+            </div>
           </div>
         )}
       </div>

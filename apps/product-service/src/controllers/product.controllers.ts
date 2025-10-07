@@ -451,7 +451,7 @@ export const getAllProducts = async (
     next(error);
   }
 };
-
+// update
 // get product details
 
 export const getProductDetails = async (

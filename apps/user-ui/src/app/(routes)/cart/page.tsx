@@ -178,6 +178,7 @@ const CartPage = () => {
                         </button>
                       </div>
                     </td>
+                    {/* update */}
                     <td>
                       <button
                         className="px-4 py-2 text-red-500 hover:text-red-700 font-bold transition duration-200 rounded-md cursor-pointer "

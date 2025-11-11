@@ -76,7 +76,7 @@ export const sendOTP = async (
   template: string
 ) => {
   const otp = crypto.randomInt(1000, 9999).toString();
-  await sendEmail(email, "Vrify your email", template, { name, otp });
+  await sendEmail(email, "Verify your email", template, { name, otp });
 
   await redis.set(`otp:${email}`, otp, "EX", 300);
   await redis.set(`otp_cooldown:${email}`, "true", "EX", 60);

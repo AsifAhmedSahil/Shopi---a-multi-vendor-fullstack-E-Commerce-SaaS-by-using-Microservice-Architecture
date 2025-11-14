@@ -9,7 +9,7 @@ async function fetchProductDetails(slug:string) {
 
 }
 
-export async function generateMetaData({params}:{params:{slug:string}}): Promise<Metadata> {
+export async function generateMetadata({params}:{params:{slug:string}}): Promise<Metadata> {
     const product = await fetchProductDetails(params?.slug)
 
     return {
@@ -33,6 +33,7 @@ export async function generateMetaData({params}:{params:{slug:string}}): Promise
 
 const Page = async({params}:{params:{slug:string}}) => {
     const productDetails = await fetchProductDetails(params?.slug)
+    console.log(productDetails)
   return (
     <div>
       

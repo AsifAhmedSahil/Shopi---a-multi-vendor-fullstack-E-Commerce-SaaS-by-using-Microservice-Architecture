@@ -1,3 +1,4 @@
+import ProductDetails from 'apps/user-ui/src/shared/modules/product/product-details'
 import axiosInstance from 'apps/user-ui/src/utils/axiosInstance'
 import { Metadata } from 'next'
 import React from 'react'
@@ -36,6 +37,7 @@ const Page = async({params}:{params:{slug:string}}) => {
     console.log(productDetails)
   return (
     <div>
+        <ProductDetails productDetails={productDetails}/>
       
     </div>
   )

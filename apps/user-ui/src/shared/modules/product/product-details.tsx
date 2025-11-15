@@ -5,6 +5,7 @@ import React, { useState } from "react";
 import ReactImageMagnify from "react-image-magnify";
 import ProductRating from "../../components/ratings";
 import Link from "next/link";
+import { useStore } from "apps/user-ui/src/store";
 
 const ProductDetails = ({ productDetails }: { productDetails: any }) => {
   console.log(productDetails);
@@ -12,6 +13,33 @@ const ProductDetails = ({ productDetails }: { productDetails: any }) => {
     productDetails?.images[0]?.url
   );
   const [currentIndex, setCurrentIndex] = useState(0);
+
+  const [isSelected, setIsSelected] = useState(
+    productDetails?.colors?.[0] || ""
+  );
+
+  const [isSizeSelected, setIsSizeSelected] = useState(
+    productDetails?.sizes?.[0] || ""
+  );
+
+  const [quantity, setQuantity] = useState(1);
+
+  const [priceRange, setPriceRange] = useState([
+    productDetails?.sale_price,
+    1199,
+  ]);
+
+  const [recomendedProducts, setRecomendedProducts] = useState([]);
+
+  const addToCart = useStore((state: any) => state.addToCart);
+  const cart = useStore((state: any) => state.cart);
+  const isInCart = cart.some((item: any) => item.id === productDetails.id);
+  const addToWishlist = useStore((state: any) => state.addToWishlist);
+  const removeFromWishlist = useStore((state: any) => state.removeFromWishlist);
+  const wishlist = useStore((state: any) => state.wishlist);
+  const isWishlisted = wishlist.some(
+    (item: any) => item.id === productDetails.id
+  );
 
   // navigate to previous image
   const prevImage = () => {
@@ -27,6 +55,12 @@ const ProductDetails = ({ productDetails }: { productDetails: any }) => {
       setCurrentImage(productDetails?.images[currentIndex + 1]);
     }
   };
+
+  const discountPercentage = Math.floor(
+    ((productDetails?.regular_price - productDetails?.sale_price) /
+      productDetails?.regular_price) *
+      100
+  );
   return (
     <div className="w-full bg-[#f5f5f5] py-5 ">
       <div className="w-[90%] bg-white lg:w-[80%] mx-auto pt-6 grid grid-cols-1 lg:grid-cols-[28%_44%_28%] gap-6 overflow-hidden">
@@ -114,7 +148,107 @@ const ProductDetails = ({ productDetails }: { productDetails: any }) => {
               </Link>
             </div>
             <div>
-              <Heart size={25} fill={"red"} className="cursor-pointer" color="transparent"/>
+              <Heart
+                size={25}
+                fill={"red"}
+                className="cursor-pointer"
+                color="transparent"
+              />
+            </div>
+          </div>
+          <div className="py-2 border-b border-gray-200">
+            <span className="text-gray-500">
+              Brand:{" "}
+              <span className="text-blue-500">
+                {productDetails?.brand || "No Brand"}
+              </span>
+            </span>
+          </div>
+
+          <div className="mt-3">
+            <span className="text-3xl font-bold text-orange-500">
+              ${productDetails?.sale_price}
+            </span>
+            <div className="flex gap-2 pb-2 text-lg border-b border-b-slate-200">
+              <span className="text-gray-400 line-through">
+                ${productDetails?.regular_price}
+              </span>
+              <span className="text-gray-500">-{discountPercentage}%</span>
+            </div>
+
+            <div className="mt-2">
+              <div className="flex flex-col md:flex-row items-start gap-5 mt-4">
+                {/* color options */}
+                {productDetails?.colors?.length > 0 && (
+                  <div>
+                    <strong>Color:</strong>
+                    <div className="flex gap-2 mt-1">
+                      {productDetails?.colors?.map(
+                        (color: string, index: number) => (
+                          <button
+                            key={index}
+                            className={`w-8 h-8 cursor-pointer rounded-full border-2 transition ${
+                              isSelected === color
+                                ? "border-gray-400 scale-110 shadow-md"
+                                : "border-transparent"
+                            }`}
+                            onClick={() => setIsSelected(color)}
+                            style={{backgroundColor:color}}
+                          />
+                        )
+                      )}
+                    </div>
+                  </div>
+                )}
+                {productDetails?.sizes?.length > 0 && (
+                  <div>
+                    <strong>Sizes:</strong>
+                    <div className="flex gap-2 mt-1">
+                      {productDetails?.sizes?.map(
+                        (size: string, index: number) => (
+                          <button
+                            key={index}
+                            className={`px-4 py-1 cursor-pointer rounded-md border-2 transition ${
+                              isSizeSelected === size
+                                ? "bg-gray-800  text-white"
+                                : "bg-gray-300  text-black"
+                            }`}
+                            onClick={() => setIsSizeSelected(size)}
+                            style={{backgroundColor:size}}
+                          >
+                            {size}
+                          </button>
+                        )
+                      )}
+                    </div>
+                  </div>
+                )}
+
+
+              </div>
+            </div>
+
+            <div className="mt-6">
+                <div className="flex items-center gap-3">
+                    <div className="flex items-center rounded-md">
+                        <button className="px-4 py-1 cursor-pointer bg-gray-300 hover:bg-gray-400 text-black font-semibold rounded-l-md" 
+                        onClick={() => setQuantity((prev) => Math.max(1, prev - 1))}
+                        >
+                            -
+                        </button>
+
+                        <span className="px-4 bg-gray-100 py-1">{quantity}</span>
+
+                        <button className="px-4 py-1 cursor-pointer bg-gray-300 hover:bg-gray-400 text-black font-semibold rounded-l-md" 
+                        onClick={() => setQuantity((prev) => Math.max(1, prev + 1))}
+                        >
+                            +
+                        </button>
+
+                    </div>
+
+                </div>
+
             </div>
           </div>
         </div>

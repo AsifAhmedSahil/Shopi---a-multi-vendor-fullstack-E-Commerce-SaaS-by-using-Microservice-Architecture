@@ -193,7 +193,7 @@ const ProductDetails = ({ productDetails }: { productDetails: any }) => {
                                 : "border-transparent"
                             }`}
                             onClick={() => setIsSelected(color)}
-                            style={{backgroundColor:color}}
+                            style={{ backgroundColor: color }}
                           />
                         )
                       )}
@@ -214,7 +214,7 @@ const ProductDetails = ({ productDetails }: { productDetails: any }) => {
                                 : "bg-gray-300  text-black"
                             }`}
                             onClick={() => setIsSizeSelected(size)}
-                            style={{backgroundColor:size}}
+                            style={{ backgroundColor: size }}
                           >
                             {size}
                           </button>
@@ -223,32 +223,46 @@ const ProductDetails = ({ productDetails }: { productDetails: any }) => {
                     </div>
                   </div>
                 )}
-
-
               </div>
             </div>
 
             <div className="mt-6">
-                <div className="flex items-center gap-3">
-                    <div className="flex items-center rounded-md">
-                        <button className="px-4 py-1 cursor-pointer bg-gray-300 hover:bg-gray-400 text-black font-semibold rounded-l-md" 
-                        onClick={() => setQuantity((prev) => Math.max(1, prev - 1))}
-                        >
-                            -
-                        </button>
+              <div className="flex items-center gap-3">
+                <div className="flex items-center rounded-md">
+                  <button
+                    className="px-4 py-1 cursor-pointer bg-gray-300 hover:bg-gray-400 text-black font-semibold rounded-l-md"
+                    onClick={() => setQuantity((prev) => Math.max(1, prev - 1))}
+                  >
+                    -
+                  </button>
 
-                        <span className="px-4 bg-gray-100 py-1">{quantity}</span>
+                  <span className="px-4 bg-gray-100 py-1">{quantity}</span>
 
-                        <button className="px-4 py-1 cursor-pointer bg-gray-300 hover:bg-gray-400 text-black font-semibold rounded-l-md" 
-                        onClick={() => setQuantity((prev) => Math.max(1, prev + 1))}
-                        >
-                            +
-                        </button>
-
-                    </div>
-
+                  <button
+                    className="px-4 py-1 cursor-pointer bg-gray-300 hover:bg-gray-400 text-black font-semibold rounded-l-md"
+                    onClick={() => setQuantity((prev) => Math.max(1, prev + 1))}
+                  >
+                    +
+                  </button>
                 </div>
+                {
+                    productDetails?.stock > 0 ? (
+                        <span className="text-green-600 font-semibold">
+                            In Stock{" "}
+                            <span className="text-gray-500 font-semibold">
+                                (Stock {productDetails?.stock})
+                            </span>
 
+                        </span>
+                    ) : (
+                        <span className="text-red-600 font-semibold">Out Of Stock</span>
+                    )
+                }
+              </div>
+
+              <button className="">
+
+              </button>
             </div>
           </div>
         </div>

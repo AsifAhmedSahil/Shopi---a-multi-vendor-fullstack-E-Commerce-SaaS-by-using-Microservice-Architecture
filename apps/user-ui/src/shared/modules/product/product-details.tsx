@@ -1,14 +1,20 @@
 "use client";
-import { ChevronLeft, ChevronRight, Heart } from "lucide-react";
+import { ChevronLeft, ChevronRight, Heart, ShoppingCartIcon } from "lucide-react";
 import Image from "next/image";
 import React, { useState } from "react";
 import ReactImageMagnify from "react-image-magnify";
 import ProductRating from "../../components/ratings";
 import Link from "next/link";
 import { useStore } from "apps/user-ui/src/store";
+import useUSer from "apps/user-ui/src/hooks/useHook";
+import useLocationTracking from "apps/user-ui/src/hooks/useLocation";
+import useDeviceTracking from "apps/user-ui/src/hooks/useDeviceTracking";
 
 const ProductDetails = ({ productDetails }: { productDetails: any }) => {
   console.log(productDetails);
+  const {user,isLoading} = useUSer()
+  const location = useLocationTracking()
+  const deviceInfo = useDeviceTracking()
   const [currentImage, setCurrentImage] = useState(
     productDetails?.images[0]?.url
   );
@@ -150,9 +156,29 @@ const ProductDetails = ({ productDetails }: { productDetails: any }) => {
             <div>
               <Heart
                 size={25}
-                fill={"red"}
+                fill={isWishlisted ? "red" : "transparent"}
                 className="cursor-pointer"
-                color="transparent"
+                color={isWishlisted ? "transparent" : "#777"}
+                onClick={()=> isWishlisted ?
+                    removeFromWishlist(
+                        productDetails.id,
+                        user,
+                        location,
+                        deviceInfo
+                    ) : addToWishlist({
+                        ...productDetails,
+                        quantity,
+                        selectedOptions:{
+                            color: isSelected,
+                            size:isSizeSelected
+                        },
+                    },
+                    user,
+                    location,
+                    deviceInfo
+                )
+
+                }
               />
             </div>
           </div>
@@ -245,23 +271,36 @@ const ProductDetails = ({ productDetails }: { productDetails: any }) => {
                     +
                   </button>
                 </div>
-                {
-                    productDetails?.stock > 0 ? (
-                        <span className="text-green-600 font-semibold">
-                            In Stock{" "}
-                            <span className="text-gray-500 font-semibold">
-                                (Stock {productDetails?.stock})
-                            </span>
-
-                        </span>
-                    ) : (
-                        <span className="text-red-600 font-semibold">Out Of Stock</span>
-                    )
-                }
+                {productDetails?.stock > 0 ? (
+                  <span className="text-green-600 font-semibold">
+                    In Stock{" "}
+                    <span className="text-gray-500 font-semibold">
+                      (Stock {productDetails?.stock})
+                    </span>
+                  </span>
+                ) : (
+                  <span className="text-red-600 font-semibold">
+                    Out Of Stock
+                  </span>
+                )}
               </div>
 
-              <button className="">
-
+              <button className={`flex items-center mt-6 gap-2 px-5 py-[10px] bg-[#ff5722] hover:bg-[#e64a19] text-white font-medium rounded-lg transition ${isInCart ? "cursor-not-allowed" : "cursor-pointer"} `}
+              disabled={isInCart || productDetails?.stock === 0}
+              onClick={()=>addToCart({
+                ...productDetails,
+                quantity,
+                selectedOptions:{
+                    color:isSelected,
+                    size:isSizeSelected
+                }
+              },
+              user,location,deviceInfo
+            )
+            }
+              >
+                <ShoppingCartIcon/>
+                Add to cart 
               </button>
             </div>
           </div>

@@ -1,5 +1,14 @@
 "use client";
-import { ChevronLeft, ChevronRight, Heart, ShoppingCartIcon } from "lucide-react";
+import {
+  ChevronLeft,
+  ChevronRight,
+  Heart,
+  MapPinIcon,
+  MessageSquareText,
+  Package,
+  ShoppingCartIcon,
+  WalletMinimal,
+} from "lucide-react";
 import Image from "next/image";
 import React, { useState } from "react";
 import ReactImageMagnify from "react-image-magnify";
@@ -9,12 +18,13 @@ import { useStore } from "apps/user-ui/src/store";
 import useUSer from "apps/user-ui/src/hooks/useHook";
 import useLocationTracking from "apps/user-ui/src/hooks/useLocation";
 import useDeviceTracking from "apps/user-ui/src/hooks/useDeviceTracking";
+import ProductCard from "../../components/cards/product-card";
 
 const ProductDetails = ({ productDetails }: { productDetails: any }) => {
   console.log(productDetails);
-  const {user,isLoading} = useUSer()
-  const location = useLocationTracking()
-  const deviceInfo = useDeviceTracking()
+  const { user, isLoading } = useUSer();
+  const location = useLocationTracking();
+  const deviceInfo = useDeviceTracking();
   const [currentImage, setCurrentImage] = useState(
     productDetails?.images[0]?.url
   );
@@ -159,25 +169,27 @@ const ProductDetails = ({ productDetails }: { productDetails: any }) => {
                 fill={isWishlisted ? "red" : "transparent"}
                 className="cursor-pointer"
                 color={isWishlisted ? "transparent" : "#777"}
-                onClick={()=> isWishlisted ?
-                    removeFromWishlist(
+                onClick={() =>
+                  isWishlisted
+                    ? removeFromWishlist(
                         productDetails.id,
                         user,
                         location,
                         deviceInfo
-                    ) : addToWishlist({
-                        ...productDetails,
-                        quantity,
-                        selectedOptions:{
+                      )
+                    : addToWishlist(
+                        {
+                          ...productDetails,
+                          quantity,
+                          selectedOptions: {
                             color: isSelected,
-                            size:isSizeSelected
+                            size: isSizeSelected,
+                          },
                         },
-                    },
-                    user,
-                    location,
-                    deviceInfo
-                )
-
+                        user,
+                        location,
+                        deviceInfo
+                      )
                 }
               />
             </div>
@@ -285,23 +297,155 @@ const ProductDetails = ({ productDetails }: { productDetails: any }) => {
                 )}
               </div>
 
-              <button className={`flex items-center mt-6 gap-2 px-5 py-[10px] bg-[#ff5722] hover:bg-[#e64a19] text-white font-medium rounded-lg transition ${isInCart ? "cursor-not-allowed" : "cursor-pointer"} `}
-              disabled={isInCart || productDetails?.stock === 0}
-              onClick={()=>addToCart({
-                ...productDetails,
-                quantity,
-                selectedOptions:{
-                    color:isSelected,
-                    size:isSizeSelected
+              <button
+                className={`flex items-center mt-6 gap-2 px-5 py-[10px] bg-[#ff5722] hover:bg-[#e64a19] text-white font-medium rounded-lg transition ${
+                  isInCart ? "cursor-not-allowed" : "cursor-pointer"
+                } `}
+                disabled={isInCart || productDetails?.stock === 0}
+                onClick={() =>
+                  addToCart(
+                    {
+                      ...productDetails,
+                      quantity,
+                      selectedOptions: {
+                        color: isSelected,
+                        size: isSizeSelected,
+                      },
+                    },
+                    user,
+                    location,
+                    deviceInfo
+                  )
                 }
-              },
-              user,location,deviceInfo
-            )
-            }
               >
-                <ShoppingCartIcon/>
-                Add to cart 
+                <ShoppingCartIcon />
+                Add to cart
               </button>
+            </div>
+          </div>
+        </div>
+
+        {/* right column  - seller information */}
+
+        <div className="bg-[#fafafa] -mt-6">
+          <div className="p-3 mb-1 border-b border-b-gray-100">
+            <span className="text-sm text-gray-600">Delivery Option</span>
+            <div className="flex items-center text-gray-600 gap-1">
+              <MapPinIcon size={18} className="ml-[-5px]" />
+              <span className="text-lg font-normal ">
+                {location?.city + ", " + location?.country}
+              </span>
+            </div>
+          </div>
+
+          <div className="mb-1 px-3  border-b border-b-gray-100">
+            <span className="text-sm text-gray-600">Return & Warranty</span>
+            <div className="flex items-center text-gray-600 gap-1">
+              <Package size={18} className="ml-[-5px]" />
+              <span className="font-normal text-base">7 Days Returns</span>
+            </div>
+            <div className="flex items-center text-gray-600 gap-1 py-2">
+              <WalletMinimal size={18} className="ml-[-5px]" />
+              <span className="font-normal text-base">
+                Warranty Not Available
+              </span>
+            </div>
+          </div>
+
+          <div className="px-3 py-1">
+            <div className="w-[85%] rounded-lg">
+              {/* sold by section */}
+              <div className="flex items-center justify-between">
+                <div>
+                  <span className="text-sm text-gray-600 font-light">
+                    Sold By
+                  </span>
+                  <span className="block max-w-[150px] truncate font-medium text-lg">
+                    {productDetails?.Shop?.name}
+                  </span>
+                </div>
+
+                <div>
+                  <Link
+                    href={"#"}
+                    className="text-blue-500 text-sm flex items-center gap-1"
+                  >
+                    <MessageSquareText />
+                    Chat Now
+                  </Link>
+                </div>
+              </div>
+
+              {/* seller performance stats */}
+
+              <div className="grid grid-cols-3 gap-2 border-t border-t-gray-200 mt-3 pt-3">
+                <div>
+                  <p className="text-[12px] text-gray-500 ">
+                    Positive Seller Ratings
+                  </p>
+                  <p className="text-lg font-semibold">88%</p>
+                </div>
+                <div>
+                  <p className="text-[12px] text-gray-500 ">Ship On Time</p>
+                  <p className="text-lg font-semibold">100%</p>
+                </div>
+                <div>
+                  <p className="text-[12px] text-gray-500 ">
+                    Chat Response Time
+                  </p>
+                  <p className="text-lg font-semibold">100%</p>
+                </div>
+              </div>
+
+              {/* go to store */}
+              <div className="text-center mt-4 border-t border-t-gray-200 pt-2">
+                <Link
+                  href={`/shop/${productDetails?.Shop.id}`}
+                  className="text-blue-500 font-medium text-sm hover:underline"
+                >
+                  GO TO STORE
+                </Link>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* product details section */}
+
+      <div className="w-[90%] lg:w-[80%] mx-auto mt-5">
+        <div className="bg-white min-h-[60vh] h-full p-5">
+          <h3 className="text-lg font-semibold">
+            product details of: {productDetails?.title}
+          </h3>
+
+          <div
+            className="prose prose-sm text-slate-500 max-w-none"
+            dangerouslySetInnerHTML={{
+              __html: productDetails?.detailed_description,
+            }}
+          ></div>
+        </div>
+
+        <div className="w-[90%] lg:w-[100%] mx-auto">
+          <div className="bg-white min-h-[50vh] h-full mt-5 p-5">
+            <h3 className="text-lg font-semibold">
+              Ratings & Reviews of {productDetails?.title}
+            </h3>
+            <p className="font-bold text-center pt-14">
+              No Reviews Available yet!
+            </p>
+          </div>
+        </div>
+
+        <div className="w-[90%] lg:w-[100%] mx-auto">
+          <div className="w-full h-full my-5 p-5">
+            <h3 className="text-xl font-semibold mb-2">You may also like</h3>
+
+            <div className="mx-auto grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
+              {recomendedProducts?.map((i: any) => (
+                <ProductCard key={i.id} product={i} />
+              ))}
             </div>
           </div>
         </div>

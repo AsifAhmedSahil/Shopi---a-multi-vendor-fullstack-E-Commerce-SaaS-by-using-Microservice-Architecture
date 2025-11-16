@@ -10,7 +10,7 @@ import {
   WalletMinimal,
 } from "lucide-react";
 import Image from "next/image";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import ReactImageMagnify from "react-image-magnify";
 import ProductRating from "../../components/ratings";
 import Link from "next/link";
@@ -19,6 +19,7 @@ import useUSer from "apps/user-ui/src/hooks/useHook";
 import useLocationTracking from "apps/user-ui/src/hooks/useLocation";
 import useDeviceTracking from "apps/user-ui/src/hooks/useDeviceTracking";
 import ProductCard from "../../components/cards/product-card";
+import axiosInstance from "apps/user-ui/src/utils/axiosInstance";
 
 const ProductDetails = ({ productDetails }: { productDetails: any }) => {
   console.log(productDetails);
@@ -56,6 +57,27 @@ const ProductDetails = ({ productDetails }: { productDetails: any }) => {
   const isWishlisted = wishlist.some(
     (item: any) => item.id === productDetails.id
   );
+
+  const fetchFilteredProducts = async () => {
+    try {
+      const query = new URLSearchParams();
+
+      query.set("priceRange", priceRange.join(","));
+      query.set("page", "1");
+      query.set("limit", "5");
+
+      const res = await axiosInstance.get(
+        `/product/api/get-filtered-products?${query.toString()}`
+      );
+      setRecomendedProducts(res.data.products);
+    } catch (error) {
+      console.error("Failed to fetch filtered product", error);
+    }
+  };
+
+  useEffect(() => {
+    fetchFilteredProducts();
+  }, [priceRange]);
 
   // navigate to previous image
   const prevImage = () => {

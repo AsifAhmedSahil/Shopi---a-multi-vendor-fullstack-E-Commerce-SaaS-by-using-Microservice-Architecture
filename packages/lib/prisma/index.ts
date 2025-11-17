@@ -7,6 +7,7 @@ declare global {
 }
 
 const prisma = new PrismaClient();
+console.log(Object.keys(prisma));
 
 if(process.env.NODE_ENV === "production") global.prismadb = prisma
 

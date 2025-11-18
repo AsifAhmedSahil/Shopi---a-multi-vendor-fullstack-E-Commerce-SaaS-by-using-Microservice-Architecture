@@ -488,51 +488,61 @@ export const getFilteredProducts = async (
 ) => {
   try {
     const {
-      priceRange = [0, 10000],
-      categories = [],
-      colors = [],
-      sizes = [],
-      page = 1,
-      limit = 12,
+      priceRange = "0,10000",
+      categories = "",
+      colors = "",
+      sizes = "",
+      page = "1",
+      limit = "12",
     } = req.query;
 
-    const parsedPriceRange =
-      typeof priceRange === "string"
-        ? priceRange.split(",").map(Number)
-        : [0, 10000];
+    // Parse values
+    const [minPrice, maxPrice] = priceRange.toString().split(",").map(Number);
     const parsedPage = Number(page);
     const parsedLimit = Number(limit);
-
     const skip = (parsedPage - 1) * parsedLimit;
 
     const filters: Record<string, any> = {
       sale_price: {
-        gte: parsedPriceRange[0],
-        lte: parsedPriceRange[1],
+        gte: minPrice,
+        lte: maxPrice,
       },
-      starting_date: null,
     };
 
-    if (categories && (categories as string[]).length > 0) {
-      filters.category = {
-        in: Array.isArray(categories)
-          ? categories
-          : String(categories).split(","),
-      };
+    // Categories
+    if (categories) {
+      const catArray = Array.isArray(categories)
+        ? categories
+        : categories.toString().split(",");
+      filters.category = { in: catArray };
     }
 
-    if (colors && (colors as string[]).length > 0) {
-      filters.colors = {
-        hasSome: Array.isArray(colors) ? colors : [colors],
-      };
+    // Colors
+    if (colors) {
+      // ensure colorsArray is string[]
+      const colorsArray: string[] = Array.isArray(colors)
+        ? colors.map((c) => String(c)) // ParsedQs or string → string
+        : String(colors).split(",");
+
+      // decode safely
+      const decodedColors = colorsArray.map((c) =>
+        decodeURIComponent(c).toLowerCase()
+      );
+
+      if (decodedColors.length > 0) {
+        filters.colors = { hasSome: decodedColors };
+      }
     }
 
-    if (sizes && (sizes as string[]).length > 0) {
-      filters.sizes = {
-        hasSome: Array.isArray(sizes) ? sizes : [sizes],
-      };
+    // Sizes
+    if (sizes) {
+      const sizesArray = Array.isArray(sizes)
+        ? sizes
+        : sizes.toString().split(",");
+      filters.sizes = { hasSome: sizesArray };
     }
 
+    // Fetch products
     const [product, total] = await Promise.all([
       prisma.products.findMany({
         where: filters,
@@ -752,8 +762,6 @@ export const searchProducts = async (
   }
 };
 
-
-
 // top shops
 export const topShops = async (
   req: Request,
@@ -761,41 +769,40 @@ export const topShops = async (
   next: NextFunction
 ) => {
   try {
-   const topShopsData = await prisma.order.groupBy({
-  by: ["shopId"],
-  _sum: { total: true },
-  orderBy: { _sum: { total: "desc" } },
-  take: 10,
-});
+    const topShopsData = await prisma.order.groupBy({
+      by: ["shopId"],
+      _sum: { total: true },
+      orderBy: { _sum: { total: "desc" } },
+      take: 10,
+    });
 
-const shopIds = topShopsData.map((item:any) => item.shopId);
+    const shopIds = topShopsData.map((item: any) => item.shopId);
 
-const shops = await prisma.shops.findMany({
-  where: { id: { in: shopIds } },
-  select: {
-    id: true,
-    name: true,
-    avatar: true,
-    coverBanner: true,
-    address: true,
-    ratings: true,
-    category: true,
-  },
-});
+    const shops = await prisma.shops.findMany({
+      where: { id: { in: shopIds } },
+      select: {
+        id: true,
+        name: true,
+        avatar: true,
+        coverBanner: true,
+        address: true,
+        ratings: true,
+        category: true,
+      },
+    });
 
-const enrichedShops = shops.map((shop) => {
-  const salesData = topShopsData.find((s:any) => s.shopId === shop.id);
-  return { ...shop, totalSales: salesData?._sum.total ?? 0 };
-});
+    const enrichedShops = shops.map((shop) => {
+      const salesData = topShopsData.find((s: any) => s.shopId === shop.id);
+      return { ...shop, totalSales: salesData?._sum.total ?? 0 };
+    });
 
-const top10Shops = enrichedShops
-  .sort((a, b) => b.totalSales - a.totalSales)
-  .slice(0, 10);
+    const top10Shops = enrichedShops
+      .sort((a, b) => b.totalSales - a.totalSales)
+      .slice(0, 10);
 
-return res.status(200).json({ shops: top10Shops });
-
+    return res.status(200).json({ shops: top10Shops });
   } catch (error) {
-    console.error("Error fetching top shops:",error)
-    return next(error)
+    console.error("Error fetching top shops:", error);
+    return next(error);
   }
 };

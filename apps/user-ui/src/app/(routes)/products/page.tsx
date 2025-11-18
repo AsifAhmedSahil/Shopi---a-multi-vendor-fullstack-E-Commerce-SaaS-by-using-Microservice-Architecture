@@ -1,6 +1,7 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
+import ProductCard from "apps/user-ui/src/shared/components/cards/product-card";
 import axiosInstance from "apps/user-ui/src/utils/axiosInstance";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -25,6 +26,8 @@ const Page = () => {
   const [products, setProducts] = useState<any[]>([]);
   const [totalPages, setTotalPages] = useState(1);
   const [isProductLoading, setIsProductLoading] = useState(false);
+
+  // console.log(products)
 
   const colors = [
     { name: "Red", code: "#FF0000" },
@@ -81,6 +84,7 @@ const Page = () => {
       const res = await axiosInstance.get(
         `/product/api/get-filtered-products?${params.toString()}`
       );
+      console.log(res);
 
       setProducts(res.data.product);
       setTotalPages(res.data.pagination.totalPages);
@@ -120,6 +124,12 @@ const Page = () => {
   const toggleColor = (color: string) => {
     setSelectedColors((prev) =>
       prev.includes(color) ? prev.filter((c) => c !== color) : [...prev, color]
+    );
+  };
+
+  const toggleSize = (size: string) => {
+    setSelectedSizes((prev) =>
+      prev.includes(size) ? prev.filter((s) => s !== size) : [...prev, size]
     );
   };
 
@@ -245,8 +255,8 @@ const Page = () => {
                 >
                   <input
                     type="checkbox"
-                    checked={selectedColors.includes(color.name)}
-                    onChange={() => toggleColor(color.name)}
+                    checked={selectedColors.includes(color.code)}
+                    onChange={() => toggleColor(color.code)}
                     className="accent-blue-600"
                   />
                   <div className="flex items-center gap-2">
@@ -262,39 +272,72 @@ const Page = () => {
                 </li>
               ))}
             </ul>
+
+            {/* filter by sizes */}
+            <h3 className="text-xl font-Poppins font-medium border-b border-b-slate-200 pb-1 mt-6">
+              Filter by Sizes
+            </h3>
+
+            <ul className="space-y-2 !mt-3">
+              {sizes.map((size) => (
+                <li
+                  key={size}
+                  className="flex items-center gap-2 cursor-pointer text-sm text-gray-700"
+                >
+                  <input
+                    type="checkbox"
+                    checked={selectedColors.includes(size)}
+                    onChange={() => toggleSize(size)}
+                    className="accent-blue-600"
+                  />
+                  <div className="flex items-center gap-2">
+                    {/* size Name */}
+                    <span className="font-medium">{size}</span>
+                  </div>
+                </li>
+              ))}
+            </ul>
           </aside>
 
-          {/* Product Section */}
-          <main className="flex-1">
+          {/* product grid */}
+          <div className="flex-1 px-2 lg:px-3">
             {isProductLoading ? (
-              <p>Loading products...</p>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-4">
+                {Array.from({ length: 10 }).map((_, index) => (
+                  <div
+                    key={index}
+                    className="h-[250px] bg-gray-300 animate-pulse rounded-xl"
+                  />
+                ))}
+              </div>
+            ) : products.length > 0 ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-4">
+                {products.map((product) => (
+                  <ProductCard key={product.id} product={product} />
+                ))}
+              </div>
             ) : (
-              <div className="grid grid-cols-2 lg:grid-cols-3 gap-5">
-                {products.map((item: any) => (
-                  <div key={item.id} className="bg-white p-4 rounded shadow">
-                    <p className="font-medium">{item.name}</p>
-                  </div>
+              <p>No Product Found!</p>
+            )}
+
+            {totalPages > 1 && (
+              <div className="flex justify-center mt-8 gap-2">
+                {Array.from({ length: totalPages }).map((_, i) => (
+                  <button
+                    key={i}
+                    onClick={() => setPage(i + 1)}
+                    className={`px-3 py-1 !rounded border border-gray-200 text-sm ${
+                      page === i + 1
+                        ? "bg-blue-600 text-white"
+                        : "bg-white text-black"
+                    }`}
+                  >
+                    {i + 1}
+                  </button>
                 ))}
               </div>
             )}
-
-            {/* Pagination */}
-            <div className="flex justify-center mt-6 gap-2">
-              {Array.from({ length: totalPages }, (_, i) => (
-                <button
-                  key={i}
-                  onClick={() => setPage(i + 1)}
-                  className={`px-3 py-1 rounded ${
-                    page === i + 1
-                      ? "bg-blue-600 text-white"
-                      : "bg-gray-200 text-black"
-                  }`}
-                >
-                  {i + 1}
-                </button>
-              ))}
-            </div>
-          </main>
+          </div>
         </div>
       </div>
     </div>

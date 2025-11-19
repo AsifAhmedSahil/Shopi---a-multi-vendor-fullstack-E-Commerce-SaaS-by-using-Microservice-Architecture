@@ -579,53 +579,71 @@ export const getFilteredEvents = async (
 ) => {
   try {
     const {
-      priceRange = [0, 10000],
-      categories = [],
-      colors = [],
-      sizes = [],
-      page = 1,
-      limit = 12,
+      priceRange = "0,10000",
+      categories = "",
+      colors = "",
+      sizes = "",
+      page = "1",
+      limit = "12",
     } = req.query;
 
-    const parsedPriceRange =
-      typeof priceRange === "string"
-        ? priceRange.split(",").map(Number)
-        : [0, 10000];
+    // --- price range ---
+    const parsedPriceRange = String(priceRange)
+      .split(",")
+      .map((n) => Number(n));
+
     const parsedPage = Number(page);
     const parsedLimit = Number(limit);
-
     const skip = (parsedPage - 1) * parsedLimit;
 
+    // --- base filter ---
     const filters: Record<string, any> = {
       sale_price: {
         gte: parsedPriceRange[0],
         lte: parsedPriceRange[1],
       },
-      NOT: {
-        starting_date: null,
-      },
+      // NOT: {
+      //   starting_date: null,
+      // },
     };
 
-    if (categories && (categories as string[]).length > 0) {
-      filters.category = {
-        in: Array.isArray(categories)
-          ? categories
-          : String(categories).split(","),
-      };
+    // --- categories ---
+    if (categories) {
+      const cats = String(categories)
+        .split(",")
+        .filter((c) => c.trim() !== "");
+      if (cats.length > 0) {
+        filters.category = { in: cats };
+      }
     }
 
-    if (colors && (colors as string[]).length > 0) {
-      filters.colors = {
-        hasSome: Array.isArray(colors) ? colors : [colors],
-      };
+    // --- colors (SAFE + DECODED) ---
+    if (colors) {
+      const colorsArray = String(colors)
+        .split(",")
+        .map((c) => decodeURIComponent(String(c)).toLowerCase())
+        .filter((c) => c.trim() !== "");
+
+      if (colorsArray.length > 0) {
+        filters.colors = { hasSome: colorsArray };
+      }
     }
 
-    if (sizes && (sizes as string[]).length > 0) {
-      filters.sizes = {
-        hasSome: Array.isArray(sizes) ? sizes : [sizes],
-      };
+    // --- sizes ---
+    if (sizes) {
+      const sizeArray = String(sizes)
+        .split(",")
+        .filter((s) => s.trim() !== "");
+
+      if (sizeArray.length > 0) {
+        filters.sizes = { hasSome: sizeArray };
+      }
     }
 
+    // DEBUG print
+    console.log("FINAL FILTERS =>", filters);
+
+    // --- Query DB ---
     const [product, total] = await Promise.all([
       prisma.products.findMany({
         where: filters,
@@ -653,6 +671,7 @@ export const getFilteredEvents = async (
     next(error);
   }
 };
+
 
 // get filtered shop
 

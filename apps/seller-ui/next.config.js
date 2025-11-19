@@ -13,9 +13,12 @@ const nextConfig = {
   nx: {},
   images:{
     remotePatterns:[
-      {
+      { protocol: "https",
         hostname:"ik.imagekit.io"
-      }
+      },
+      { protocol: "https",
+        hostname:"res.cloudinary.com"
+      },
     ]
   }
 };

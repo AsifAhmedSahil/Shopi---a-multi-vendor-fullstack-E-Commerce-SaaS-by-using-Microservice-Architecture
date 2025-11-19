@@ -17,6 +17,11 @@ const nextConfig = {
         hostname: "ik.imagekit.io",
         pathname: "/**", // allow all images
       },
+       
+      { protocol: "https",
+        hostname:"res.cloudinary.com",
+        pathname: "/**",
+      },
     ],
   },
 };

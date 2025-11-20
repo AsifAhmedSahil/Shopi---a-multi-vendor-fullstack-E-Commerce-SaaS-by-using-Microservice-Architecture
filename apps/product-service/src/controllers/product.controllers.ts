@@ -414,6 +414,16 @@ export const getAllProducts = async (
     const baseFilter = {
       isDeleted: false, // ✅ only fetch active products
     };
+    // const baseFilter = {
+    //   OR:[
+    //     {
+    //       starting_date: null
+    //     },
+    //     {
+    //       ending_date: null
+    //     },
+    //   ]
+    // };
 
     const orderBy: Prisma.productsOrderByWithRelationInput =
       type === "latest" ? { createdAt: "desc" } : { totalSales: "desc" };
@@ -449,6 +459,74 @@ export const getAllProducts = async (
     });
   } catch (error) {
     next(error);
+  }
+};
+export const getAllevents = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const page = parseInt(req.query.page as string) || 1;
+    const limit = parseInt(req.query.limit as string) || 20;
+    const skip = (page - 1) * limit;
+    const type = req.query.type;
+
+    // const baseFilter = {
+    //   AND: [{starting_date: {not: null}},{ending_date:{not:null}}]
+    // };
+    const baseFilter = {
+      isDeleted: false, 
+    };
+    // const baseFilter = {
+    //   OR:[
+    //     {
+    //       starting_date: null
+    //     },
+    //     {
+    //       ending_date: null
+    //     },
+    //   ]
+    // };
+
+    // const orderBy: Prisma.productsOrderByWithRelationInput =
+    //   type === "latest" ? { createdAt: "desc" } : { totalSales: "desc" };
+
+    const [events, total, top10sales] = await Promise.all([
+      prisma.products.findMany({
+        skip,
+        take: limit,
+        where: baseFilter,
+        include: {
+          images: true,
+          Shop: true,
+        },
+        orderBy:{
+          totalSales:"desc"
+        },
+      }),
+
+      prisma.products.count({ where: baseFilter }),
+
+      prisma.products.findMany({
+        take: 10,
+        where: baseFilter,
+        orderBy:{
+          totalSales:"desc"
+        },
+      }),
+    ]);
+
+    res.status(200).json({
+      events,
+      top10sales,
+      
+      total,
+      currentPage: page,
+      totalPages: Math.ceil(total / limit),
+    });
+  } catch (error) {
+    res.status(500).json({message:"Failed to fetch events"})
   }
 };
 // update
@@ -795,6 +873,7 @@ export const topShops = async (
       take: 10,
     });
 
+    console.log(topShopsData,"******")
     const shopIds = topShopsData.map((item: any) => item.shopId);
 
     const shops = await prisma.shops.findMany({
@@ -809,6 +888,8 @@ export const topShops = async (
         category: true,
       },
     });
+
+    console.log(shops)
 
     const enrichedShops = shops.map((shop) => {
       const salesData = topShopsData.find((s: any) => s.shopId === shop.id);

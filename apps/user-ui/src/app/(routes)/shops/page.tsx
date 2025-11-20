@@ -112,7 +112,7 @@ const Page = () => {
           <Link href="/" className="text-[#55585b] hover:underline">
             Home
           </Link>
-          <span className="inline-block p-[1.5px] mx-1 bg-[#a8acb0] rounded-full">
+          <span className="inline-block p-[1.5px] mx-1  rounded-full">
             .
           </span>
           <span className="text-[#55585b]">All Shops</span>

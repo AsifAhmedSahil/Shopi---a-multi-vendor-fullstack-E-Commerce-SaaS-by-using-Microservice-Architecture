@@ -3,7 +3,8 @@ import { useQueryClient } from "@tanstack/react-query";
 import useUSer from "apps/user-ui/src/hooks/useHook";
 import StatCard from "apps/user-ui/src/shared/components/cards/stad.card";
 import axiosInstance from "apps/user-ui/src/utils/axiosInstance";
-import { Bell, CheckCircle, Clock, Inbox, Loader2, Lock, LogOut, MapPin, ShoppingBag, Truck, User } from "lucide-react";
+import { Bell, CheckCircle, Clock, Inbox, Loader2, Lock, LogOut, MapPin, Pencil, ShoppingBag, Truck, User } from "lucide-react";
+import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
 import React, { useEffect, useState } from "react";
 
@@ -107,7 +108,44 @@ const page = () => {
 
           {/* main content */}
 
-          
+        <div className="bg-white p-6 rounded-md shadow-md border border-gray-200 w-full md:w-[55%]">
+            <h2 className="text-xl font-semibold text-gray-800 mb-4">
+                {activeTab}
+
+            </h2>
+            {
+                activeTab === "Profile" && !isLoading && user ?(
+                    <div className="space-y-4 text-sm text-gray-700">
+                        <div className="flex items-center gap-3">
+                            <Image src={user?.avatar || "https://res.cloudinary.com/djbpo9xg5/image/upload/v1725030217/qnheigwgqbwldduangmo.jpg"} alt="profile" width={60} height={60}
+                            className="w-16 h-16 rounded-full border border-gray-200"
+                            />
+                             <button className="flex items-center gap-1 text-blue-500 text-xs font-medium">
+                                <Pencil className="w-4 h-4"/>
+                                Change Photo
+
+                             </button>
+                        </div>
+                        <p>
+                            <span className="font-semibold">Name:</span> {user.name}
+                        </p>
+                        <p>
+                            <span className="font-semibold">Email:</span> {user.email}
+                        </p>
+                        <p>
+                            <span className="font-semibold">Joined:</span> {" "}{new Date(user.createdAt).toLocaleDateString()}
+                        </p>
+                        <p>
+                            <span className="font-semibold">Earned Points:</span> {user.points || 0}
+                        </p>
+                    </div>
+
+                ) : (
+                <></>
+            )
+            }
+
+        </div>
         </div>
       </div>
     </div>

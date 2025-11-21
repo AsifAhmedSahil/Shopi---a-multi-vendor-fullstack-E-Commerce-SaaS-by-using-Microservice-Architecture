@@ -29,6 +29,7 @@ model users {
   following   String[]
   shopReviews shopReviews[]
   Orders Order[]
+ 
   createdAt   DateTime      @default(now())
   updatedAt   DateTime      @updatedAt
 }
@@ -153,5 +154,29 @@ model Order {
   Shop  shops? @relation(fields: [shopId], references: [id])
   User  users? @relation(fields: [userId], references: [id])
 }
+
+enum addressType {
+  Home
+  Work
+  Other
+}
+
+model Address {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId     String   @db.ObjectId
+ 
+
+  label      addressType
+  name       String
+  street     String
+  city       String
+  zip        String
+  country    String
+  isDefault  Boolean  @default(true)
+
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
+
 
 

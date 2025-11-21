@@ -9,7 +9,11 @@ import {
   verifyOtp,
 } from "../utils/auth.helper";
 import prisma from "@packages/lib/prisma";
-import { AuthenticationError, ValidationError } from "@packages/error-handler";
+import {
+  AuthenticationError,
+  NotFoundError,
+  ValidationError,
+} from "@packages/error-handler";
 import bcrypt from "bcryptjs";
 import jwt, { JsonWebTokenError } from "jsonwebtoken";
 import { setCookie } from "../utils/cookies/setCookies";
@@ -103,8 +107,8 @@ export const loginUser = async (
       throw new AuthenticationError("Wrong Password or email!");
     }
 
-    res.clearCookie("seller-access-token")
-    res.clearCookie("seller-refresh-token")
+    res.clearCookie("seller-access-token");
+    res.clearCookie("seller-refresh-token");
 
     // generate access and refresh token
 
@@ -184,7 +188,7 @@ export const refreshToken = async (
       setCookie(res, "seller-access-token", newAccessToken);
     }
 
-    req.role = decoded.role
+    req.role = decoded.role;
 
     return res.status(201).json({ success: true });
   } catch (error) {}
@@ -438,8 +442,8 @@ export const loginSeller = async (
     const isMatch = await bcrypt.compare(password, seller.password);
     if (!isMatch) return next(new ValidationError("Invalid email or password"));
 
-    res.clearCookie("access_token")
-    res.clearCookie("refresh_token")
+    res.clearCookie("access_token");
+    res.clearCookie("refresh_token");
 
     // generate access and refresh token
     const accessToken = jwt.sign(
@@ -489,13 +493,121 @@ export const getSeller = async (
   }
 };
 
-
 // add new address
 
-export const addUserAddress  =async(
-  req:any,
-  res:Response,
-  next:NextFunction
-)=>{
+export const addUserAddress = async (
+  req: any,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const userId = req.user?.id;
+    const { label, name, street, city, zip, country, isDefault } = req.body;
 
-}
+    if (!label || !name || !street || !city || !zip || !country) {
+      return next(new ValidationError("All field are required"));
+    }
+
+    if (isDefault) {
+      await prisma.address.updateMany({
+        where: {
+          userId,
+          isDefault: true,
+        },
+        data: {
+          isDefault: false,
+        },
+      });
+    }
+
+    const newAddress = await prisma.address.create({
+      data: {
+        userId,
+        label,
+        name,
+        street,
+        city,
+        zip,
+        country,
+        isDefault,
+      },
+    });
+
+    res.status(201).json({
+      success: true,
+      address: newAddress,
+    });
+  } catch (error) {
+    return next(error);
+  }
+};
+
+// delete user address
+
+export const deleteUserAddress = async (
+  req: any,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const userId = req.user?.id;
+    const { addressId } = req.params;
+
+    if (!addressId) {
+      return next(new ValidationError("Address ID is required"));
+    }
+
+    const existingAddress = await prisma.address.findMany({
+      where: {
+        id: addressId,
+        userId,
+      },
+    });
+
+    if (!existingAddress) {
+      return next(new NotFoundError("Address not found or unauthorized!"));
+    }
+
+    await prisma.address.delete({
+      where: {
+        id: addressId,
+      },
+    });
+
+    res.status(200).json({
+      success: true,
+      message: "Address deleted successfully!",
+    });
+  } catch (error) {
+    return next(error);
+  }
+};
+
+// get user address
+
+export const getUserAddresses = async (
+  req: any,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const userId = req.user?.id;
+    const addresses = await prisma.address.findMany({
+      where: {
+        userId,
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
+    });
+
+    res.status(200).json({
+      success: true,
+      addresses,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+

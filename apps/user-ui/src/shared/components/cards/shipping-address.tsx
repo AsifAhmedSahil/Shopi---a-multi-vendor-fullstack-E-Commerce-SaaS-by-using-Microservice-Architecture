@@ -1,4 +1,6 @@
 "use client";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import axiosInstance from "apps/user-ui/src/utils/axiosInstance";
 import { countries } from "apps/user-ui/src/utils/countries";
 import { Plus, X } from "lucide-react";
 import React, { useState } from "react";
@@ -6,6 +8,7 @@ import { useForm } from "react-hook-form";
 
 const ShippingAddressSection = () => {
   const [showModal, setShowModal] = useState(false);
+  const queryClient = useQueryClient();
 
   const {
     register,
@@ -24,8 +27,23 @@ const ShippingAddressSection = () => {
     },
   });
 
-  const onSubmit = () => {
-    
+  const {mutate:addAddress} = useMutation({
+    mutationFn: async (payload: any) => {
+      const res = await axiosInstance.post("/api/add-address", payload);
+      return res.data.address;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["shipping-addresses"] });
+      reset();
+      setShowModal(false);
+    },
+  });
+
+  const onSubmit = (data:any) => {
+    addAddress({
+      ...data,
+      isDefault: data?.isDefault === "true"
+    })
   };
   return (
     <div className="space-y-4">
@@ -56,7 +74,7 @@ const ShippingAddressSection = () => {
               Add New Address
             </h3>
 
-            <form onSubmit={handleSubmit(onSubmit)} className="space-y-3">
+            <form onSubmit={handleSubmit(onSubmit)} className="space-y-3 flex flex-col">
               <select {...register("label")} className="form-input">
                 <option value="Home">Home</option>
                 <option value="Work">Work</option>
@@ -110,7 +128,10 @@ const ShippingAddressSection = () => {
                 <option value="false">Not Default</option>
               </select>
 
-              <button type="submit" className="w-full bg-blue-600 text-white text-sm py-2 rounded-md hover:text-blue-700 transition">
+              <button
+                type="submit"
+                className="w-full bg-blue-600 text-white text-sm py-2 rounded-md hover:text-blue-700 transition"
+              >
                 Save Address
               </button>
             </form>

@@ -29,7 +29,7 @@ app.get("/docs-json",(req,res)=>{
 })
 
 // routes
-app.use("/api",router);
+app.use("/",router);
 
 const port = process.env.PORT || 6001;
 

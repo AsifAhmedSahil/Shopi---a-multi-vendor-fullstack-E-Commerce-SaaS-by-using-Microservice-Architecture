@@ -2,6 +2,7 @@
 import { useQueryClient } from "@tanstack/react-query";
 import useUSer from "apps/user-ui/src/hooks/useHook";
 import QuickActionCard from "apps/user-ui/src/shared/components/cards/quick-action-card";
+import ShippingAddressSection from "apps/user-ui/src/shared/components/cards/shipping-address";
 import StatCard from "apps/user-ui/src/shared/components/cards/stad.card";
 import axiosInstance from "apps/user-ui/src/utils/axiosInstance";
 import {
@@ -164,9 +165,10 @@ const page = () => {
                   {user.points || 0}
                 </p>
               </div>
-            ) : (
-              <></>
-            )}
+            ) : activeTab === "Shipping Address" ? (
+                <ShippingAddressSection/>
+
+            ): (<></>)}
           </div>
 
           {/* right quick panel */}
@@ -175,7 +177,7 @@ const page = () => {
               Icon={Gift}
               title="Referral Program"
               description="Invite friends and eard rewards"
-            />
+            /> 
             <QuickActionCard
               Icon={BadgeCheck}
               title="Your Badges"

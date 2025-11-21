@@ -488,3 +488,14 @@ export const getSeller = async (
     next(error);
   }
 };
+
+
+// add new address
+
+export const addUserAddress  =async(
+  req:any,
+  res:Response,
+  next:NextFunction
+)=>{
+
+}

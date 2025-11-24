@@ -28,10 +28,10 @@ model users {
   avatar      images?
   following   String[]
   shopReviews shopReviews[]
-  Orders Order[]
- 
-  createdAt   DateTime      @default(now())
-  updatedAt   DateTime      @updatedAt
+  Orders      Order[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model shopReviews {
@@ -62,7 +62,7 @@ model shops {
   reviews       shopReviews[]
   sellerId      String        @unique @db.ObjectId
   seller        sellers       @relation(fields: [sellerId], references: [id])
-  Orders        Order[]  
+  Orders        Order[]
   createdAt     DateTime      @default(now())
   updatedAt     DateTime      @updatedAt()
   products      products[]
@@ -140,7 +140,6 @@ model products {
   Shop                  shops         @relation(fields: [shopId], references: [id])
 }
 
-
 model Order {
   id        String   @id @default(auto()) @map("_id") @db.ObjectId
   shopId    String   @db.ObjectId
@@ -151,32 +150,28 @@ model Order {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  Shop  shops? @relation(fields: [shopId], references: [id])
-  User  users? @relation(fields: [userId], references: [id])
+  Shop shops? @relation(fields: [shopId], references: [id])
+  User users? @relation(fields: [userId], references: [id])
 }
 
 enum addressType {
-  Home
-  Work
-  Other
+  HOME
+  WORK
+  OTHER
 }
 
-model Address {
-  id        String   @id @default(auto()) @map("_id") @db.ObjectId
-  userId     String   @db.ObjectId
- 
+model address {
+  id     String @id @default(auto()) @map("_id") @db.ObjectId
+  userId String @db.ObjectId
 
-  label      addressType
-  name       String
-  street     String
-  city       String
-  zip        String
-  country    String
-  isDefault  Boolean  @default(true)
+  label     addressType
+  name      String
+  street    String
+  city      String
+  zip       String
+  country   String
+  isDefault Boolean     @default(false)
 
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
-
-
-

@@ -1,14 +1,16 @@
 "use client";
 
+import { useQuery } from "@tanstack/react-query";
 import useDeviceTracking from "apps/user-ui/src/hooks/useDeviceTracking";
 import useUSer from "apps/user-ui/src/hooks/useHook";
 import useLocationTracking from "apps/user-ui/src/hooks/useLocation";
 import { useStore } from "apps/user-ui/src/store";
+import axiosInstance from "apps/user-ui/src/utils/axiosInstance";
 import { Loader2 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 
 const CartPage = () => {
   const { user } = useUSer();
@@ -63,6 +65,26 @@ const CartPage = () => {
     (total: number, item: any) => total + item.quantity * item.sale_price,
     0
   );
+
+  // get addresses
+    const { data: addresses = [] } = useQuery<any[],Error>({
+    queryKey: ["shipping-addresses"],
+    queryFn: async () => {
+      const res = await axiosInstance.get("/api/shipping-addresses");
+      return res.data.addresses;
+    },
+  });
+
+  useEffect(()=>{
+    if(addresses.length > 0 && !selectedAddressId){
+      const defaultAddr = addresses.find((addr)=> addr.isDefault);
+      if(defaultAddr){
+        setSelectedAddressId(defaultAddr.id)
+      }
+    }
+  },[addresses,selectedAddressId])
+
+
   return (
     <div className="w-full bg-white">
       <div className="md:w-[80%] w-[95%] mx-auto min-h-screen">

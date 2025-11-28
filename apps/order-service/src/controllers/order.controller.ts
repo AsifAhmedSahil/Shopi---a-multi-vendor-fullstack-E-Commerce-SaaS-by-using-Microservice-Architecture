@@ -1,7 +1,7 @@
 import { ValidationError } from "@packages/error-handler";
 import prisma from "@packages/lib/prisma";
 import redis from "@packages/lib/redis";
-import { NextFunction, Response } from "express";
+import { NextFunction, Request, Response } from "express";
 import crypto from "crypto";
 import Stripe from "stripe";
 
@@ -146,6 +146,38 @@ export const createPaymentSession = async (
     );
 
     return res.status(201).json({ sessionId });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// verify payment session
+
+export const verifyingPaymentSession = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const sessionId = req.query.sessionId as string;
+    if (!sessionId) {
+      return res.status(400).json({ error: "Session ID is required." });
+    }
+
+    // fetch session from redis
+    const sessionKey = `payment-session:${sessionId}`;
+    const sessionData = await redis.get(sessionKey);
+
+    if (!sessionData) {
+      return res.status(400).json({ error: "Session Not Found" });
+    }
+
+    // parse and return session
+    const session = JSON.parse(sessionData);
+    return res.status(200).json({
+      success: true,
+      session,
+    });
   } catch (error) {
     next(error);
   }

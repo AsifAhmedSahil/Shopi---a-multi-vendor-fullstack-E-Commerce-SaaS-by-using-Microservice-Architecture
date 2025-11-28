@@ -29,9 +29,11 @@ model users {
   following   String[]
   shopReviews shopReviews[]
   Orders      Order[]
+   createdNotifications Notification[] @relation("UserCreatedNotifications")
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  userAnalytics UserAnalytics[] 
 }
 
 model shopReviews {
@@ -66,6 +68,7 @@ model shops {
   createdAt     DateTime      @default(now())
   updatedAt     DateTime      @updatedAt()
   products      products[]
+   productAnalytics ProductAnalytics[]
 }
 
 model sellers {
@@ -138,20 +141,37 @@ model products {
   updatedAt             DateTime      @updatedAt
   shopId                String        @db.ObjectId
   Shop                  shops         @relation(fields: [shopId], references: [id])
+  productAnalytics ProductAnalytics[]
 }
 
 model Order {
   id        String   @id @default(auto()) @map("_id") @db.ObjectId
   shopId    String   @db.ObjectId
   userId    String?  @db.ObjectId
+  shippingAddressId String? @db.ObjectId
+  couponCode       String?
+  discountAmount   Float?   @default(0)
   total     Float
   status    String   @default("pending")
-  products  Json
+  // products  Json
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   Shop shops? @relation(fields: [shopId], references: [id])
   User users? @relation(fields: [userId], references: [id])
+
+  items  OrderItem[]
+}
+
+model OrderItem {
+  id              String   @id @default(auto()) @map("_id") @db.ObjectId
+  orderId         String   @db.ObjectId
+  productId       String   @db.ObjectId
+  quantity        Int
+  price           Float
+  selectedOptions Json
+
+  Order Order @relation(fields: [orderId], references: [id])
 }
 
 enum addressType {
@@ -174,4 +194,47 @@ model address {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+
+model ProductAnalytics {
+  id            String   @id @default(auto()) @map("_id") @db.ObjectId
+  productId     String   @unique @db.ObjectId
+  shopId        String   @db.ObjectId
+  purchases     Int      @default(0)
+  lastViewedAt  DateTime?
+
+  product products @relation(fields: [productId], references: [id])
+  shop    shops    @relation(fields: [shopId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+
+model UserAnalytics {
+  id          String        @id @default(auto()) @map("_id") @db.ObjectId
+  userId      String        @unique @db.ObjectId
+  lastVisited DateTime
+  actions     Json
+
+  user users @relation(fields: [userId], references: [id])
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+
+model Notification {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  title       String
+  message     String
+  creatorId   String   @db.ObjectId       // user who triggered this notification
+  receiverId  String                      // can be "admin" or userId
+  redirect_link        String?
+  isRead      Boolean  @default(false)
+  
+  createdAt   DateTime @default(now())
+
+  creator     users?   @relation("UserCreatedNotifications", fields: [creatorId], references: [id])
 }

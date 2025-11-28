@@ -4,6 +4,9 @@ import redis from "@packages/lib/redis";
 import { NextFunction, Request, Response } from "express";
 import crypto from "crypto";
 import Stripe from "stripe";
+import { timeStamp } from "console";
+import { Prisma } from "@prisma/client";
+import { sendEmail } from "../utils/send-email";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: "2025-05-28.basil",
@@ -147,7 +150,7 @@ export const createPaymentSession = async (
 
     return res.status(201).json({ sessionId });
   } catch (error) {
-    next(error);
+    return next(error);
   }
 };
 
@@ -179,6 +182,239 @@ export const verifyingPaymentSession = async (
       session,
     });
   } catch (error) {
-    next(error);
+    return next(error);
+  }
+};
+
+// create order
+
+export const createOrder = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const stripeSignature = req.headers["stripe-signature"];
+
+    if (!stripeSignature) {
+      return res.status(400).send("Missing stripe signature");
+    }
+
+    const rawBody = (req as any).rawBody;
+
+    let event;
+
+    try {
+      event = stripe.webhooks.constructEvent(
+        rawBody,
+        stripeSignature,
+        process.env.STRIPE_WEBHOOK_SECRET!
+      );
+    } catch (error: any) {
+      console.error("Webhook signature verification failed:", error.message);
+      return res.status(400).send(`webhook error:${error.message}`);
+    }
+
+    if (event.type === "payment_intent.succeeded") {
+      const paymentIntent = event.data.object as Stripe.PaymentIntent;
+      const sessionId = paymentIntent.metadata.sessionId;
+      const userId = paymentIntent.metadata.userId;
+
+      const sessionKey = `payment-session:${sessionId}`;
+      const sessionData = await redis.get(sessionKey);
+
+      if (!sessionData) {
+        console.warn("Session data expired or missing for ", sessionId);
+        return res
+          .status(200)
+          .send("No session found, skipping order creation");
+      }
+
+      const { cart, totalAmount, shippingAddressId, coupon } =
+        JSON.parse(sessionData);
+
+      const user = await prisma.users.findUnique({ where: { id: userId } });
+      const name = user?.name!;
+      const email = user?.email!;
+
+      const shopGrouped = cart.reduce((acc: any, item: any) => {
+        if (!acc[item.shopId]) acc[item.shopId] = [];
+        acc[item.shopId].push(item);
+        return acc;
+      }, {});
+
+      for (const shopId in shopGrouped) {
+        const orderItems = shopGrouped[shopId];
+
+        let orderTotal = orderItems.reduce(
+          (sum: any, p: any) => sum + p.quantity * p.sale_price,
+          0
+        );
+
+        // apply discount if applicable
+
+        if (
+          coupon &&
+          coupon.discountedProductId &&
+          orderItems.some((item: any) => item.id === coupon.discountedProductId)
+        ) {
+          const discountedItem = orderItems.find(
+            (item: any) => item.id === coupon.discountedProductId
+          );
+
+          if (discountedItem) {
+            const discount =
+              coupon.discountPercent > 0
+                ? (discountedItem.sale_price *
+                    discountedItem.quantity *
+                    coupon.discountPercent) /
+                  100
+                : coupon.discountAmount;
+
+            orderTotal -= discount;
+          }
+        }
+
+        // create order
+
+        await prisma.order.create({
+          data: {
+            userId,
+            shopId,
+            total: orderTotal,
+            status: "Paid",
+            shippingAddressId: shippingAddressId || null,
+            couponCode: coupon?.code || null,
+            discountAmount: coupon?.discountAmount || 0,
+            items: {
+              create: orderItems.map((item: any) => ({
+                productId: item.id,
+                quantity: item.quantity,
+                price: item.sale_price,
+                selectedOptions: item.selectedOptions,
+              })),
+            },
+          },
+        });
+
+        // update product and analytics
+
+        for (const item of orderItems) {
+          const { id: productId, quantity } = item;
+
+          await prisma.products.update({
+            where: { id: productId },
+            data: {
+              stock: { decrement: quantity },
+              totalSales: { increment: quantity },
+            },
+          });
+
+          await prisma.productAnalytics.upsert({
+            where: { productId },
+            create: {
+              productId,
+              shopId,
+              purchases: quantity,
+              lastViewedAt: new Date(),
+            },
+            update: {
+              purchases: { increment: quantity },
+            },
+          });
+
+          const existingAnalytics = await prisma.userAnalytics.findUnique({
+            where: { userId },
+          });
+
+          const newAction = {
+            productId,
+            shopId,
+            action: "purchase",
+            timeStamp: Date.now(),
+          };
+
+          const currentActions = Array.isArray(existingAnalytics?.actions)
+            ? (existingAnalytics.actions as Prisma.JsonArray)
+            : [];
+
+          if (existingAnalytics) {
+            await prisma.userAnalytics.update({
+              where: { userId },
+              data: {
+                lastVisited: new Date(),
+                actions: [...currentActions, newAction],
+              },
+            });
+          } else {
+            await prisma.userAnalytics.create({
+              data: {
+                userId,
+                lastVisited: new Date(),
+                actions: [newAction],
+              },
+            });
+          }
+        }
+
+        // send email for user
+
+        await sendEmail(
+            email,
+            "Your Shopi Order Confirmation",
+            "order-confirmation",
+            {
+                name,
+                cart,
+                totalAmount: coupon?.discountAmount ? totalAmount - coupon?.discountAmount : totalAmount,
+                trackingUrl: `https://shopi.com/order/${sessionId}`
+            }
+        )
+
+        // create notifications for seller
+        const createdShopIds = Object.keys(shopGrouped);
+        const sellerShops = await prisma.shops.findMany({
+            where:{id:{in:createdShopIds}},
+            select:{
+                id:true,
+                sellerId:true,
+                name:true,
+            }
+        });
+
+        for (const shop of sellerShops){
+            const firstProduct = shopGrouped[shop.id][0];
+            const productTitle = firstProduct?.title || "new item";
+
+            await prisma.notification.create({
+                data:{
+                    title:"New Order Reveived",
+                    message:`A customer just ordered ${productTitle} from your shop `,
+                    creatorId: userId,
+                    receiverId: shop.sellerId,
+                    redirect_link: `https://shopi.com/order/${sessionId}`
+                }
+            })
+        }
+
+        // create notification for admin
+
+        await prisma.notification.create({
+            data:{
+                title:"Platform order alert",
+                message:`A new order was placed by ${name}`,
+                creatorId:userId,
+                receiverId: "admin",
+                redirect_link: `https://shopi.com/order/${sessionId}`
+            }
+        })
+
+        await redis.del(sessionKey)
+      }
+    }
+    res.status(200).json({received:true})
+  } catch (error) {
+    console.log(error)
+    return next(error);
   }
 };

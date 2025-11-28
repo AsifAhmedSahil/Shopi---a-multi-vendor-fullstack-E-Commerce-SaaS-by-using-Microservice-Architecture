@@ -5,6 +5,7 @@ import cookieParser from "cookie-parser"
 import bodyParser from "body-parser"
 import { errormiddleware } from '@packages/error-handler/error-middleware';
 import router from './routes/order.route';
+import { createOrder } from './controllers/order.controller';
 
 
 
@@ -15,6 +16,16 @@ app.use(
     allowedHeaders:["Authorization","Content-Type"],
     credentials:true 
   })
+)
+// it is for stripe ***
+app.post(
+  "/api/create-order",
+  bodyParser.raw({ type: "application/json"}),
+  (req,res,next) =>{
+    (req as any).rawBody  =req.body;
+    next();
+  },
+  createOrder
 )
 
 app.use(express.json());

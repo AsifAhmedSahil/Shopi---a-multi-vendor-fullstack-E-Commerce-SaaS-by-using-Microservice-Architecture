@@ -11,6 +11,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react";
+import toast from "react-hot-toast";
 
 const CartPage = () => {
   const { user } = useUSer();
@@ -29,6 +30,26 @@ const CartPage = () => {
   const [selectedAddressId, setSelectedAddressId] = useState("");
 
   console.log(cart);
+
+  const createPaymentSession = async () => {
+    setLoading(true);
+    try {
+      const res = await axiosInstance.post(
+        "/order/api/create-payment-session",
+        {
+          cart,
+          selectedAddressId,
+          coupon: {},
+        }
+      );
+      const sessionId = res.data.sessionId;
+      router.push(`/checkout?sessionId=${sessionId}`);
+    } catch (error) {
+      toast.error("Something went wrong. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const decreaseQuantity = (id: string) => {
     console.log(id);
@@ -67,7 +88,7 @@ const CartPage = () => {
   );
 
   // get addresses
-    const { data: addresses = [] } = useQuery<any[],Error>({
+  const { data: addresses = [] } = useQuery<any[], Error>({
     queryKey: ["shipping-addresses"],
     queryFn: async () => {
       const res = await axiosInstance.get("/api/shipping-addresses");
@@ -75,15 +96,14 @@ const CartPage = () => {
     },
   });
 
-  useEffect(()=>{
-    if(addresses.length > 0 && !selectedAddressId){
-      const defaultAddr = addresses.find((addr)=> addr.isDefault);
-      if(defaultAddr){
-        setSelectedAddressId(defaultAddr.id)
+  useEffect(() => {
+    if (addresses.length > 0 && !selectedAddressId) {
+      const defaultAddr = addresses.find((addr) => addr.isDefault);
+      if (defaultAddr) {
+        setSelectedAddressId(defaultAddr.id);
       }
     }
-  },[addresses,selectedAddressId])
-
+  }, [addresses, selectedAddressId]);
 
   return (
     <div className="w-full bg-white">
@@ -266,28 +286,25 @@ const CartPage = () => {
                   <h4 className="mb-[7px] font-medium text-[15px]">
                     Select Shipping Address
                   </h4>
-                 {
-                  addresses?.length !== 0 && (
-                    <select className="w-full p-2 border border-gray-200 rounded-md focus:border-gray-400" 
-                    value={selectedAddressId}
-                    onChange={(e)=> setSelectedAddressId(e.target.value)}
+                  {addresses?.length !== 0 && (
+                    <select
+                      className="w-full p-2 border border-gray-200 rounded-md focus:border-gray-400"
+                      value={selectedAddressId}
+                      onChange={(e) => setSelectedAddressId(e.target.value)}
                     >
-                      {
-                        addresses.map((address:any)=>(
-                          <option value={address.id} key={address.id}>
-                            {address.label} - {address.city}, {address.country}
-                          </option>
-                        ))
-                      }
+                      {addresses.map((address: any) => (
+                        <option value={address.id} key={address.id}>
+                          {address.label} - {address.city}, {address.country}
+                        </option>
+                      ))}
                     </select>
-                  )
-                 }
+                  )}
 
-                 {
-                  addresses.length === 0 && (
-                    <p className="text-sm text-slate-800">Please add an address from profile to create an order</p>
-                  )
-                 }
+                  {addresses.length === 0 && (
+                    <p className="text-sm text-slate-800">
+                      Please add an address from profile to create an order
+                    </p>
+                  )}
                 </div>
                 <hr className="my-4 text-slate-200" />
                 <div className="mb-4">
@@ -309,6 +326,7 @@ const CartPage = () => {
                 </div>
 
                 <button
+                onClick={createPaymentSession}
                   disabled={loading}
                   className="w-full flex items-center justify-center gap-2 cursor-pointer mt-4 py-3 text-white bg-[#010f1c] hover:bg-blue-600 transition-all rounded-md"
                 >

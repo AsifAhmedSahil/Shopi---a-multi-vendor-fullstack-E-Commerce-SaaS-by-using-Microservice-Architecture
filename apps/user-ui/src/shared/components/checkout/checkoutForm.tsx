@@ -1,20 +1,130 @@
-import React from 'react'
+import {
+  PaymentElement,
+  useElements,
+  useStripe,
+} from "@stripe/react-stripe-js";
+import { CheckCircle, Loader2, XCircle } from "lucide-react";
+import React, { useState } from "react";
 
 const CheckOutForm = ({
-    clientSecret,
-    cartItems,
-    coupon,
-    sessionId
-}:{
-    clientSecret:string;
-    cartItems:any[];
-    coupon:any;
-    sessionId:string | null;
-
+  clientSecret,
+  cartItems,
+  coupon,
+  sessionId,
+}: {
+  clientSecret: string;
+  cartItems: any[];
+  coupon: any;
+  sessionId: string | null;
 }) => {
-  return (
-    <div>checkoutForm</div>
-  )
-}
+  const stripe = useStripe();
+  const elements = useElements();
 
-export default CheckOutForm
+  const [loading, setLoading] = useState(false);
+  const [status, setStatus] = useState<"success" | "failed" | null>(null);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
+
+  const handlesubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    setErrorMsg(null);
+
+    if (!stripe || !elements) {
+      setLoading(false);
+      return;
+    }
+
+    const result = await stripe?.confirmPayment({
+      elements,
+      confirmParams: {
+        return_url: `${window.location.origin}/payment-success?sessionId=${sessionId}`,
+      },
+    });
+
+    if (result.error) {
+      setStatus("failed");
+      setErrorMsg(result.error.message || "Something went wrong!");
+    } else {
+      setStatus("success");
+    }
+
+    setLoading(false);
+  };
+
+  const total = cartItems.reduce(
+    (sum, item) => sum + item.sale_price * item.quantity,
+    0
+  );
+
+  return (
+    <div className="flex justify-center items-center min-h-[80vh] px-4 my-10">
+      <form className="bg-white w-full max-w-lg p-8 rounded-md shadow space-y-6">
+        <h2 className="text-3xl font-bold text-center mb-2">
+          Secure Payment Checkout
+        </h2>
+
+        {/* dynamic order summary */}
+        <div className="bg-gray-100 p-4 rounded-md text-sm text-gray-700 space-y-2">
+          {cartItems.map((item, index) => (
+            <div key={index} className="flex justify-between text-sm pb-1">
+              <span>
+                {item.quantity} x {item.title}
+              </span>
+              <span>${(item.quantity * item.sale_price).toFixed(2)}</span>
+            </div>
+          ))}
+
+          <div className="flex justify-between font-semibold pt-2 border-t border-t-transparent">
+            {coupon?.discountAmount !== 0 && (
+              <>
+                <span>Discount</span>
+                <span>${(coupon?.discountAmount).toFixed(2)}</span>
+              </>
+            )}
+          </div>
+
+          <div className="flex justify-between font-semibold mt-2">
+            <span>Total</span>
+            <span>${(total - coupon?.discountAmount).toFixed(2)}</span>
+          </div>
+        </div>
+
+        <PaymentElement />
+        <button
+          type="submit"
+          disabled={!stripe || loading}
+          className="w-full bg-blue-600 text-white py-2 rounded-lg font-medium hover:bg-blue-700"
+        >
+          {loading && <Loader2 className="animate-spin w-5 h-5" />}
+          {loading ? "Processing..." : "Pay Now"}
+        </button>
+
+        {errorMsg && (
+          <div className="flex items-center gap-2 text-red-500 text-sm justify-center">
+            <XCircle
+              className="
+              w-5 h-5"
+            />
+            {errorMsg}
+          </div>
+        )}
+
+        {status === "success" && (
+          <div className="flex items-center gap-2 text-green-700 text-sm justify-center">
+            <CheckCircle className="w-5 h-5" />
+            Payment Successful!
+          </div>
+        )}
+
+        {status === "failed" && (
+          <div className="flex items-center gap-2 text-red-700 text-sm justify-center">
+            <XCircle className="w-5 h-5" />
+            Payment Failed!, Please try again
+          </div>
+        )}
+      </form>
+    </div>
+  );
+};
+
+export default CheckOutForm;

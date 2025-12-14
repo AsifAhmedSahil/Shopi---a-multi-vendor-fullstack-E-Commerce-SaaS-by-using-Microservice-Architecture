@@ -19,9 +19,12 @@ import jwt, { JsonWebTokenError } from "jsonwebtoken";
 import { setCookie } from "../utils/cookies/setCookies";
 import Stripe from "stripe";
 
+console.log(process.env.STRIPE_SECRET_KEY!);
+
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: "2025-05-28.basil",
 });
+console.log(stripe);
 
 // register with new user
 
@@ -385,38 +388,38 @@ export const createStripeConnectLink = async (
   try {
     const { sellerId } = req.body;
     if (!sellerId) return next(new ValidationError("Seller ID is required!"));
+    console.log(process.env.STRIPE_SECRET_KEY!);
+
+    // console.log(sellerId)
+    // console.log("Stripe key loaded:", process.env.STRIPE_SECRET_KEY?.slice(0,8));
 
     const seller = await prisma.sellers.findUnique({ where: { id: sellerId } });
+if (!seller) return next(new ValidationError("Seller not found!"));
 
-    if (!seller) return next(new ValidationError("Seller not found!"));
+const account = await stripe.accounts.create({
+  type: "express",
+  country: "US",  // Must be a supported country
+  email: seller.email,
+  capabilities: {
+    card_payments: { requested: true },
+    transfers: { requested: true },
+  },
+});
 
-    const account = await stripe.accounts.create({
-      type: "express",
-      email: seller?.email,
-      country: "BD",
-      capabilities: {
-        card_payments: { requested: true },
-        transfers: { requested: true },
-      },
-    });
+await prisma.sellers.update({
+  where: { id: sellerId },
+  data: { stripeId: account.id },
+});
 
-    await prisma.sellers.update({
-      where: {
-        id: sellerId,
-      },
-      data: {
-        stripeId: account.id,
-      },
-    });
+const accountLinks = await stripe.accountLinks.create({
+  account: account.id,
+  refresh_url: "http://localhost:3000/success",
+  return_url: "http://localhost:3000/success",
+  type: "account_onboarding",
+});
 
-    const accountLinks = await stripe.accountLinks.create({
-      account: account.id,
-      refresh_url: "http://localhost:3000/success",
-      return_url: "http://localhost:3000/success",
-      type: "account_onboarding",
-    });
+res.json({ url: accountLinks.url });
 
-    res.json({ url: accountLinks.url });
   } catch (error) {
     return next(error);
   }
@@ -609,5 +612,3 @@ export const getUserAddresses = async (
     next(error);
   }
 };
-
-

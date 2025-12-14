@@ -30,7 +30,7 @@ export const createPaymentIntent = async (
       payment_method_types: ["card"],
       application_fee_amount: platformFee,
       transfer_data: {
-        destination: sellerStripeAccountId,
+        destination: sellerStripeAccountId || "",
       },
       metadata: {
         sessionId,

@@ -117,6 +117,7 @@ const SignUp = () => {
     console.log("connect stripe hit")
     try {
       const response = await axios.post(`${process.env.NEXT_PUBLIC_SERVER_URI}/api/create-stripe-link`,{sellerId})
+      console.log(response)
 
       if(response.data.url){
         window.location.href = response.data.url

@@ -49,8 +49,9 @@ const Page = () => {
 
         setCartItems(cart);
         setCoupon(coupon);
+        console.log(sellers[0])
 
-        const sellerStripeAccountId = sellers[0].stripeAccountId;
+        const sellerStripeAccountId = sellers[0].stripeAccountOd;
 
         const intentRes = await axiosInstance.post(
           "/order/api/create-payment-intent",

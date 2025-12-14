@@ -75,10 +75,10 @@ const CheckOutForm = ({
           ))}
 
           <div className="flex justify-between font-semibold pt-2 border-t border-t-transparent">
-            {coupon?.discountAmount !== 0 && (
+            { coupon && coupon?.discountAmount !== 0 && (
               <>
                 <span>Discount</span>
-                <span>${(coupon?.discountAmount).toFixed(2)}</span>
+                <span>${(coupon?.discountAmount)?.toFixed(2)}</span>
               </>
             )}
           </div>
